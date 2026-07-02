@@ -12,3 +12,19 @@ frontend/*.iml
 # Duplicate files
 * 2*
 * 5*
+
+# Flutter build cache
+frontend/.dart_tool/
+frontend/.flutter-plugins*
+frontend/android/.gradle/
+frontend/build/
+
+# Android
+*.apk
+*.aab
+*.lock
+.DS_Store
+
+# Duplicate files
+* 2*
+* 5*
