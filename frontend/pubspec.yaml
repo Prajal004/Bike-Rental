@@ -19,6 +19,7 @@ dependencies:
   qr_flutter: ^4.1.0
   image_picker: ^1.0.7
   flutter_launcher_icons: ^0.14.4
+  intl: ^0.18.1  # ✅ ADD THIS
 
 dev_dependencies:
   flutter_test:

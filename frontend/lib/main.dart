@@ -1,23 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'providers/auth_provider.dart';
-import 'providers/language_provider.dart';
-import 'providers/rental_provider.dart';
-import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  
+void main() {
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => LanguageProvider(prefs)),
-        ChangeNotifierProvider(create: (_) => RentalProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const MyApp(),
     ),
@@ -29,32 +21,49 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
-    
     return MaterialApp(
-      title: 'BikeRent Nepal',
+      title: 'BikeFlow',
       theme: ThemeData(
         primaryColor: const Color(0xFF1A394F),
         scaffoldBackgroundColor: Colors.grey.shade50,
+        fontFamily: 'Inter',
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
           iconTheme: IconThemeData(color: Color(0xFF1A394F)),
-          titleTextStyle: TextStyle(
-            color: Color(0xFF1A394F),
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
         ),
       ),
-      locale: languageProvider.locale,
-      supportedLocales: const [Locale('en'), Locale('ne')],
-      home: authProvider.isAuthenticated 
-          ? const HomeScreen() 
-          : const SplashScreen(),
+      home: authProvider.isLoggedIn ? const HomeScreen() : const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
+  }
+}
+
+// ===== AUTH PROVIDER =====
+class AuthProvider extends ChangeNotifier {
+  bool _isLoggedIn = false;
+  bool get isLoggedIn => _isLoggedIn;
+
+  void login() {
+    _isLoggedIn = true;
+    notifyListeners();
+  }
+
+  void logout() {
+    _isLoggedIn = false;
+    notifyListeners();
+  }
+}
+
+// ===== THEME PROVIDER =====
+class ThemeProvider extends ChangeNotifier {
+  bool _isDark = false;
+  bool get isDark => _isDark;
+
+  void toggleTheme() {
+    _isDark = !_isDark;
+    notifyListeners();
   }
 }

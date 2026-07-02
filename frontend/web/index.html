@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BikeFlow – UI</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: #f2f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    /* Mobile frame */
+    .phone {
+      max-width: 390px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      padding: 20px 20px 10px;
+      position: relative;
+    }
+
+    /* Status bar (mock) */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eef2f6;
+    }
+
+    /* ----- AUTH SCREEN (Login / Register) ----- */
+    .auth-screen {
+      padding: 20px 0 10px;
+    }
+
+    .auth-screen .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .brand i {
+      font-size: 32px;
+      color: #2563eb;
+      background: #dbeafe;
+      padding: 10px;
+      border-radius: 16px;
+    }
+
+    .brand h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .brand span {
+      color: #2563eb;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .auth-tabs button {
+      flex: 1;
+      padding: 12px 0;
+      border: none;
+      background: #f1f5f9;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 16px;
+      color: #475569;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .auth-tabs .active {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+    }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 20px;
+      font-size: 15px;
+      background: #fafcff;
+      transition: 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: #2563eb;
+      outline: none;
+      background: white;
+    }
+
+    .auth-btn {
+      width: 100%;
+      padding: 16px;
+      background: #2563eb;
+      border: none;
+      border-radius: 30px;
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 10px;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .auth-btn:active {
+      transform: scale(0.97);
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 24px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .auth-footer a {
+      color: #2563eb;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    /* ----- BIKE DASHBOARD (Home) ----- */
+    .dashboard {
+      display: none;
+      padding-top: 8px;
+    }
+
+    .greeting {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .greeting h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .greeting h2 small {
+      font-size: 14px;
+      font-weight: 400;
+      color: #64748b;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .avatar {
+      background: #2563eb;
+      color: white;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    /* Bike card */
+    .bike-card {
+      background: linear-gradient(145deg, #0f172a, #1e293b);
+      border-radius: 32px;
+      padding: 24px 20px;
+      color: white;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bike-info h3 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .bike-info p {
+      font-size: 14px;
+      opacity: 0.7;
+      margin: 6px 0 12px;
+    }
+
+    .bike-info .status {
+      background: #22c55e;
+      padding: 4px 14px;
+      border-radius: 40px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-block;
+      color: #0f172a;
+    }
+
+    .bike-icon i {
+      font-size: 64px;
+      color: #94a3b8;
+      opacity: 0.8;
+    }
+
+    /* Quick stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat-item {
+      background: #f8fafc;
+      padding: 14px 6px;
+      border-radius: 24px;
+      text-align: center;
+      border: 1px solid #eef2f6;
+    }
+
+    .stat-item i {
+      font-size: 22px;
+      color: #2563eb;
+      margin-bottom: 4px;
+    }
+
+    .stat-item .number {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .stat-item .label {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    /* Action row */
+    .action-row {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .action-btn {
+      flex: 1;
+      background: #f1f5f9;
+      border: none;
+      padding: 14px 0;
+      border-radius: 30px;
+      font-weight: 600;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .action-btn.primary {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+    }
+
+    .action-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Recent trips */
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .section-title h4 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .section-title a {
+      color: #2563eb;
+      font-weight: 500;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .trip-item {
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      padding: 12px 16px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+      border: 1px solid #eef2f6;
+    }
+
+    .trip-item i {
+      font-size: 20px;
+      color: #2563eb;
+      width: 36px;
+    }
+
+    .trip-detail {
+      flex: 1;
+    }
+
+    .trip-detail .route {
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .trip-detail .time {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .trip-item .badge {
+      background: #dbeafe;
+      color: #2563eb;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Bottom navigation */
+    .bottom-nav {
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 6px;
+      border-top: 1px solid #eef2f6;
+      margin-top: 16px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #94a3b8;
+      font-size: 12px;
+      transition: 0.2s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 6px 12px;
+    }
+
+    .nav-item i {
+      font-size: 22px;
+      margin-bottom: 2px;
+    }
+
+    .nav-item.active {
+      color: #2563eb;
+    }
+
+    .nav-item.active i {
+      background: #dbeafe;
+      padding: 6px 10px;
+      border-radius: 40px;
+    }
+
+    /* Toggle between auth and dashboard */
+    .hidden {
+      display: none;
+    }
+
+    .show {
+      display: block;
+    }
+
+    /* small */
+    @media (max-width: 400px) {
+      .phone { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone">
+
+    <!-- Status -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <span><i class="fas fa-wifi"></i> <i class="fas fa-battery-three-quarters"></i></span>
+    </div>
+
+    <!-- ========== AUTH SCREEN ========== -->
+    <div id="authScreen" class="auth-screen show">
+      <div class="brand">
+        <i class="fas fa-motorcycle"></i>
+        <h1>Bike<span>Flow</span></h1>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="active" id="loginTab">Login</button>
+        <button id="signupTab">Sign up</button>
+      </div>
+
+      <!-- Login form -->
+      <div id="loginForm">
+        <div class="input-group">
+          <label>Email or Username</label>
+          <input type="text" placeholder="you@example.com" value="prajal@bike.com" />
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" value="12345678" />
+        </div>
+        <button class="auth-btn" id="loginBtn"><i class="fas fa-arrow-right" style="margin-right: 10px;"></i> Log in</button>
+        <div class="auth-footer">
+          Forgot password? <a href="#">Reset</a>
+        </div>
+      </div>
+
+      <!-- Signup form (hidden by default) -->
+      <div id="signupForm" class="hidden">
+        <div class="input-group">
+          <label>Full name</label>
+          <input type="text" placeholder="Prajal Shrestha" />
+        </div>
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" placeholder="prajal@bike.com" />
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" placeholder="Create a strong password" />
+        </div>
+        <button class="auth-btn" id="signupBtn"><i class="fas fa-user-plus" style="margin-right: 10px;"></i> Create account</button>
+        <div class="auth-footer">
+          Already have an account? <a href="#" id="switchToLogin">Login</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== BIKE DASHBOARD ========== -->
+    <div id="dashboard" class="dashboard">
+      <!-- Greeting -->
+      <div class="greeting">
+        <h2>
+          Hello, Prajal
+          <small>Ready to ride?</small>
+        </h2>
+        <div class="avatar">P</div>
+      </div>
+
+      <!-- Bike card -->
+      <div class="bike-card">
+        <div class="bike-info">
+          <h3>Mountain X</h3>
+          <p>Electric · 75% battery</p>
+          <span class="status"><i class="fas fa-circle" style="font-size: 8px; margin-right: 6px; color: #22c55e;"></i> Online</span>
+        </div>
+        <div class="bike-icon">
+          <i class="fas fa-motorcycle"></i>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-item">
+          <i class="fas fa-road"></i>
+          <div class="number">28</div>
+          <div class="label">km today</div>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-clock"></i>
+          <div class="number">1.2h</div>
+          <div class="label">ride time</div>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-bolt"></i>
+          <div class="number">340</div>
+          <div class="label">calories</div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="action-row">
+        <button class="action-btn primary"><i class="fas fa-play"></i> Start Ride</button>
+        <button class="action-btn"><i class="fas fa-map-pin"></i> Locate</button>
+        <button class="action-btn"><i class="fas fa-cog"></i></button>
+      </div>
+
+      <!-- Recent Trips -->
+      <div class="section-title">
+        <h4>Recent Trips</h4>
+        <a href="#">See all</a>
+      </div>
+
+      <div class="trip-item">
+        <i class="fas fa-flag-checkered"></i>
+        <div class="trip-detail">
+          <div class="route">Thamel → Swoyambhu</div>
+          <div class="time">Today, 4:20 PM • 3.2 km</div>
+        </div>
+        <span class="badge">12 min</span>
+      </div>
+
+      <div class="trip-item">
+        <i class="fas fa-flag-checkered"></i>
+        <div class="trip-detail">
+          <div class="route">Patan → Boudha</div>
+          <div class="time">Yesterday, 9:15 AM • 5.8 km</div>
+        </div>
+        <span class="badge">22 min</span>
+      </div>
+
+      <!-- Bottom Navigation (Bike specific) -->
+      <div class="bottom-nav">
+        <button class="nav-item active"><i class="fas fa-home"></i> Home</button>
+        <button class="nav-item"><i class="fas fa-map"></i> Map</button>
+        <button class="nav-item"><i class="fas fa-chart-line"></i> Stats</button>
+        <button class="nav-item"><i class="fas fa-sliders-h"></i> Settings</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    (function() {
+      // DOM elements
+      const authScreen = document.getElementById('authScreen');
+      const dashboard = document.getElementById('dashboard');
+      const loginTab = document.getElementById('loginTab');
+      const signupTab = document.getElementById('signupTab');
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      const loginBtn = document.getElementById('loginBtn');
+      const signupBtn = document.getElementById('signupBtn');
+      const switchToLogin = document.getElementById('switchToLogin');
+
+      // Tabs
+      loginTab.addEventListener('click', function() {
+        loginTab.classList.add('active');
+        signupTab.classList.remove('active');
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+      });
+
+      signupTab.addEventListener('click', function() {
+        signupTab.classList.add('active');
+        loginTab.classList.remove('active');
+        loginForm.classList.add('hidden');
+        signupForm.classList.remove('hidden');
+      });
+
+      // Switch from signup to login (link)
+      if (switchToLogin) {
+        switchToLogin.addEventListener('click', function(e) {
+          e.preventDefault();
+          loginTab.click();
+        });
+      }
+
+      // Login button -> show dashboard
+      loginBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        authScreen.classList.remove('show');
+        authScreen.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+        dashboard.classList.add('show');
+      });
+
+      // Signup button -> also show dashboard (demo)
+      signupBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        authScreen.classList.remove('show');
+        authScreen.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+        dashboard.classList.add('show');
+      });
+
+      // (Optional) Nav items active state
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function() {
+          document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+
+      // Bottom nav "Home" already active by default
+    })();
+  </script>
+
+</body>
+</html>

@@ -266,6 +266,12 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "intl",
+      "rootUri": "file:///Users/prajalshah/.pub-cache/hosted/pub.dev/intl-0.18.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "json_annotation",
       "rootUri": "file:///Users/prajalshah/.pub-cache/hosted/pub.dev/json_annotation-4.9.0",
       "packageUri": "lib/",
@@ -596,7 +602,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2026-07-02T11:38:20.742738Z",
+  "generated": "2026-07-02T18:11:01.122835Z",
   "generator": "pub",
   "generatorVersion": "3.5.0",
   "flutterRoot": "file:///Users/prajalshah/flutter",
