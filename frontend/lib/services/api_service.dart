@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String baseUrl = 'https://bike-rental-backend-pxt1.onrender.com/api';
+  final String baseUrl = 'https://bike-rental-backend-0pq9.onrender.com/api';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
@@ -48,7 +48,7 @@ class ApiService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      
+
       final response = await http.post(
         Uri.parse('$baseUrl/referrals/apply'),
         headers: {
@@ -67,7 +67,7 @@ class ApiService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      
+
       final response = await http.get(
         Uri.parse('$baseUrl/referrals/wallet'),
         headers: {'Authorization': 'Bearer $token'},
@@ -86,7 +86,7 @@ class ApiService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      
+
       final response = await http.post(
         Uri.parse('$baseUrl/sos/trigger'),
         headers: {

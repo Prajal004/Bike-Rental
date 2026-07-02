@@ -1,0 +1,4 @@
+#Thu Jul 02 17:25:15 NPT 2026
+base.0=/Users/prajalshah/Desktop/Motorcycle Rental  Apps/frontend/build/app/intermediates/dex/release/minifyReleaseWithR8/classes.dex
+path.0=classes.dex
+renamed.0=classes.dex
