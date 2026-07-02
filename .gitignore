@@ -1,0 +1,14 @@
+
+# Build output
+frontend/build/
+frontend/.dart_tool/
+frontend/.flutter-plugins*
+frontend/*.iml
+*.apk
+*.aab
+*.lock
+.DS_Store
+
+# Duplicate files
+* 2*
+* 5*
