@@ -26,31 +26,24 @@ const userSchema = new mongoose.Schema({
     minlength: 6,
     select: false,
   },
-  
-  // FEATURE 3: Nepali Language Preference
   preferredLanguage: {
     type: String,
     enum: ['ne', 'en'],
-    default: 'ne',
+    default: 'en',
   },
-  
   profileImage: {
     type: String,
     default: '',
   },
-  
   address: {
     type: String,
     default: '',
   },
-  
   drivingLicense: {
     licenseNumber: String,
     imageUrl: String,
     verified: { type: Boolean, default: false },
   },
-  
-  // FEATURE 2: Referral System
   referralCode: {
     type: String,
     unique: true,
@@ -73,8 +66,6 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  
-  // FEATURE 4: SOS System - Emergency Contacts
   emergencyContacts: [
     {
       name: { type: String, required: true },
@@ -82,24 +73,19 @@ const userSchema = new mongoose.Schema({
       relation: { type: String, required: true },
     },
   ],
-  
-  // Default payment method
   defaultPaymentMethod: {
     type: String,
     enum: ['esewa', 'khalti', 'fonepay', 'cash'],
     default: 'cash',
   },
-  
   isVerified: {
     type: Boolean,
     default: false,
   },
-  
   otp: {
     code: String,
     expiresAt: Date,
   },
-  
   createdAt: {
     type: Date,
     default: Date.now,
@@ -129,12 +115,10 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
 // Generate referral code if not exists
 userSchema.pre('save', async function (next) {
   if (!this.referralCode && this.isNew) {
-    // Generate unique referral code based on name and phone
     const baseCode = this.fullName.substring(0, 4).toUpperCase() + 
                      this.phone.slice(-4);
     this.referralCode = baseCode;
     
-    // Make sure it's unique
     let existingUser = await mongoose.model('User').findOne({ referralCode: this.referralCode });
     let counter = 1;
     while (existingUser) {
