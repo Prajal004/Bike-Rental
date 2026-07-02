@@ -1,46 +1,40 @@
-
-# Build output
-frontend/build/
-frontend/.dart_tool/
-frontend/.flutter-plugins*
-frontend/*.iml
-*.apk
-*.aab
-*.lock
+# Mac OS
 .DS_Store
+Thumbs.db
 
-# Duplicate files
-* 2*
-* 5*
-
-# Flutter build cache
-frontend/.dart_tool/
-frontend/.flutter-plugins*
-frontend/android/.gradle/
-frontend/build/
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub/
+build/
+*.lock
 
 # Android
 *.apk
 *.aab
-*.lock
-.DS_Store
+android/.gradle/
+
+# iOS
+ios/Flutter/Generated*.xcconfig
+ios/Flutter/flutter_export_environment*.sh
 
 # Duplicate files
 * 2*
+* 3*
+* 4*
 * 5*
+* 6*
+* 7*
+* 8*
 
-# Flutter build cache
+# IDE
+*.iml
+.idea/
+.vscode/
+
+# Misc
+frontend/build/
 frontend/.dart_tool/
 frontend/.flutter-plugins*
 frontend/android/.gradle/
-frontend/build/
-
-# Android
-*.apk
-*.aab
-*.lock
-.DS_Store
-
-# Duplicate files
-* 2*
-* 5*
