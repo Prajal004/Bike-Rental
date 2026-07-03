@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../main.dart';
-import 'home_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'otp_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,8 +15,12 @@ class _LoginScreenState extends State<LoginScreen>
   late TabController _tabController;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+
+  final String baseUrl = 'https://bike-rental-backend-0pq9.onrender.com/api';
 
   @override
   void initState() {
@@ -30,25 +34,95 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       _showError('Please fill all fields');
       return;
     }
+
     setState(() => _isLoading = true);
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() => _isLoading = false);
-      Provider.of<AuthProvider>(context, listen: false).login();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text.trim(),
+        }),
       );
-    });
+
+      final data = jsonDecode(response.body);
+
+      if (data['success']) {
+        _showSuccess('OTP sent to your phone');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OTPScreen(userId: data['userId']),
+          ),
+        );
+      } else {
+        _showError(data['message'] ?? 'Login failed');
+      }
+    } catch (e) {
+      _showError('Network error: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _register() async {
+    if (_nameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _phoneController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      _showError('Please fill all fields');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'fullName': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'password': _passwordController.text.trim(),
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data['success']) {
+        _showSuccess('Account created! Please login.');
+        _tabController.animateTo(0);
+        _nameController.clear();
+        _emailController.clear();
+        _phoneController.clear();
+        _passwordController.clear();
+      } else {
+        _showError(data['message'] ?? 'Registration failed');
+      }
+    } catch (e) {
+      _showError('Network error: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), backgroundColor: Colors.red),
+    );
+  }
+
+  void _showSuccess(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: Colors.green),
     );
   }
 
@@ -76,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               const SizedBox(height: 12),
               const Text(
-                'BikeFlow',
+                'Bike Rental',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -129,14 +203,14 @@ class _LoginScreenState extends State<LoginScreen>
           const Text('Welcome Back!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('Login to continue riding',
+          Text('Login to continue',
               style: TextStyle(color: Colors.grey.shade600)),
           const SizedBox(height: 24),
           TextField(
             controller: _emailController,
             decoration: InputDecoration(
-              labelText: 'Email or Username',
-              hintText: 'prajal@bike.com',
+              labelText: 'Email',
+              hintText: 'you@example.com',
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               prefixIcon: const Icon(Icons.email),
@@ -217,10 +291,11 @@ class _LoginScreenState extends State<LoginScreen>
           const Text('Create Account',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('Sign up to start riding',
+          Text('Sign up to start',
               style: TextStyle(color: Colors.grey.shade600)),
           const SizedBox(height: 24),
           TextField(
+            controller: _nameController,
             decoration: InputDecoration(
               labelText: 'Full Name',
               hintText: 'Prajal Shah',
@@ -231,9 +306,10 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           const SizedBox(height: 16),
           TextField(
+            controller: _emailController,
             decoration: InputDecoration(
               labelText: 'Email',
-              hintText: 'prajal@bike.com',
+              hintText: 'you@example.com',
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               prefixIcon: const Icon(Icons.email),
@@ -241,6 +317,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           const SizedBox(height: 16),
           TextField(
+            controller: _phoneController,
             decoration: InputDecoration(
               labelText: 'Phone Number',
               hintText: '9841234567',
@@ -251,6 +328,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           const SizedBox(height: 16),
           TextField(
+            controller: _passwordController,
             obscureText: true,
             decoration: InputDecoration(
               labelText: 'Password',
@@ -265,17 +343,19 @@ class _LoginScreenState extends State<LoginScreen>
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: _isLoading ? null : _register,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1A394F),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30)),
               ),
-              child: const Text('Sign up',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold)),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Sign up',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold)),
             ),
           ),
         ],
