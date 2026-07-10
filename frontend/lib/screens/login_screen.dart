@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 import 'otp_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isLoading = false;
   bool _obscurePassword = true;
 
-  final String baseUrl = 'https://bike-rental-backend-0pq9.onrender.com/api';
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -31,6 +30,10 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -43,27 +46,21 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': _emailController.text.trim(),
-          'password': _passwordController.text.trim(),
-        }),
+      final response = await _apiService.login(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
 
-      final data = jsonDecode(response.body);
-
-      if (data['success']) {
+      if (response['success']) {
         _showSuccess('OTP sent to your phone');
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => OTPScreen(userId: data['userId']),
+            builder: (_) => OTPScreen(userId: response['userId']),
           ),
         );
       } else {
-        _showError(data['message'] ?? 'Login failed');
+        _showError(response['message'] ?? 'Login failed');
       }
     } catch (e) {
       _showError('Network error: $e');
@@ -84,20 +81,14 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'fullName': _nameController.text.trim(),
-          'email': _emailController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'password': _passwordController.text.trim(),
-        }),
+      final response = await _apiService.register(
+        fullName: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
+        password: _passwordController.text.trim(),
       );
 
-      final data = jsonDecode(response.body);
-
-      if (data['success']) {
+      if (response['success']) {
         _showSuccess('Account created! Please login.');
         _tabController.animateTo(0);
         _nameController.clear();
@@ -105,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen>
         _phoneController.clear();
         _passwordController.clear();
       } else {
-        _showError(data['message'] ?? 'Registration failed');
+        _showError(response['message'] ?? 'Registration failed');
       }
     } catch (e) {
       _showError('Network error: $e');
@@ -135,7 +126,6 @@ class _LoginScreenState extends State<LoginScreen>
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             children: [
-              // Logo
               Container(
                 width: 80,
                 height: 80,
@@ -158,7 +148,6 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
               const SizedBox(height: 20),
-              // Tabs
               Container(
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
