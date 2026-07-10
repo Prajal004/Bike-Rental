@@ -72,6 +72,21 @@
       color: white !important;
     }
 
+    .btn-download {
+      background: #f2b705;
+      color: #0b1f17 !important;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-weight: 700 !important;
+      transition: 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-download:hover {
+      background: #e6a800;
+      transform: scale(1.02);
+    }
+
     /* ===== HERO ===== */
     .hero {
       display: flex;
@@ -131,6 +146,16 @@
     }
     .btn-hero.outline:hover {
       background: rgba(255,255,255,0.1);
+      transform: scale(1.02);
+    }
+
+    .btn-hero.download {
+      background: #f2b705;
+      color: #0b1f17;
+      border: none;
+    }
+    .btn-hero.download:hover {
+      background: #e6a800;
       transform: scale(1.02);
     }
 
@@ -340,7 +365,8 @@
     <div class="nav-links">
       <a href="#features">Features</a>
       <a href="#download">Download</a>
-      <a href="https://bike-rental-phi.vercel.app" class="btn-primary" target="_blank">Open App</a>
+      <a href="https://bike-rental-pi-dusky.vercel.app" class="btn-primary" target="_blank">Open App</a>
+      <a href="/bike-rental.apk" download class="btn-download">📲 Download APK</a>
     </div>
   </nav>
 
@@ -350,10 +376,10 @@
       <h1>Rent a bike <br><span>anywhere, anytime</span></h1>
       <p>Book bikes in minutes from stations across Kathmandu Valley. Pay online or cash — it's your ride.</p>
       <div class="hero-buttons">
-        <a href="https://bike-rental-phi.vercel.app" class="btn-hero primary" target="_blank">
+        <a href="https://bike-rental-pi-dusky.vercel.app" class="btn-hero primary" target="_blank">
           <i class="fas fa-motorcycle"></i> Book Now
         </a>
-        <a href="https://bike-rental-phi.vercel.app" class="btn-hero outline" target="_blank">
+        <a href="/bike-rental.apk" download class="btn-hero download">
           <i class="fas fa-download"></i> Download App
         </a>
       </div>
@@ -402,18 +428,18 @@
     <h2>📲 Get the <span>App</span></h2>
     <p>Download the APK or use the web app directly.</p>
     <div class="download-buttons">
-      <a href="https://bike-rental-phi.vercel.app" class="download-btn" target="_blank">
+      <a href="https://bike-rental-pi-dusky.vercel.app" class="download-btn" target="_blank">
         <i class="fas fa-globe"></i>
         <div>
           <div class="small">Open in Browser</div>
           <div class="big">Web App</div>
         </div>
       </a>
-      <a href="https://bike-rental-phi.vercel.app" class="download-btn" target="_blank">
+      <a href="/bike-rental.apk" download class="download-btn">
         <i class="fab fa-android"></i>
         <div>
           <div class="small">Download for Android</div>
-          <div class="big">APK (22 MB)</div>
+          <div class="big">APK (53 MB)</div>
         </div>
       </a>
     </div>
@@ -424,7 +450,8 @@
   <footer class="footer">
     <p>&copy; 2026 Bike Rental. Built with ❤️ in Nepal.</p>
     <div>
-      <a href="https://bike-rental-phi.vercel.app" target="_blank">App</a>
+      <a href="https://bike-rental-pi-dusky.vercel.app" target="_blank">App</a>
+      <a href="/bike-rental.apk" download>Download APK</a>
       <a href="#">Privacy</a>
       <a href="#">Terms</a>
       <a href="#">Contact</a>
