@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Home - Prajal</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="screen">
+  <div class="station-select">
+    <span>&#128205; Satungal Station</span>
+    <span>&#9662;</span>
+  </div>
+
+  <div class="content">
+    <div class="promo-banner">
+      <strong>Enjoy prajal Services and ride easily</strong>
+      <p style="margin:6px 0 0;font-size:13px;opacity:.9;">Book a motorbike in minutes</p>
+    </div>
+
+    <div class="row-between">
+      <h3 style="margin:16px 0 10px;">Around you</h3>
+      <span class="link" style="font-size:13px;">See All</span>
+    </div>
+
+    <div class="bike-grid" id="bikeGrid">Loading...</div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="home.html" class="active">🏠<br>Home</a>
+    <a href="orders.html">🧾<br>Orders</a>
+    <a href="#" id="logoutLink">🚪<br>Logout</a>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  Auth.requireAuth();
+
+  document.getElementById('logoutLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    Auth.logout();
+  });
+
+  async function loadBikes() {
+    const grid = document.getElementById('bikeGrid');
+    try {
+      const bikes = await api('/bikes');
+      if (!bikes.length) { grid.innerHTML = '<p class="muted">No motorbikes available right now.</p>'; return; }
+      grid.innerHTML = bikes.map(b => `
+        <div class="bike-card card" onclick="location.href='detail.html?id=${b.id}'">
+          <div class="placeholder-img">${b.name}</div>
+          <div class="name">${b.name}</div>
+          <div class="rating">⭐ ${b.rating}</div>
+          <div class="row-between">
+            <span class="price">${formatMoney(b.price_per_day)}/day</span>
+            <span>&#8250;</span>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      grid.innerHTML = `<p class="error-box show">${err.message}</p>`;
+    }
+  }
+  loadBikes();
+</script>
+</body>
+</html>

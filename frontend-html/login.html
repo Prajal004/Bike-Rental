@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login - Prajal</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="screen">
+  <div class="hero-green">
+    <div class="logo">praj<span style="opacity:.7">al</span></div>
+  </div>
+  <div class="content">
+    <h2>Welcome back</h2>
+    <p class="muted">Enter your email or phone and password to continue</p>
+    <div id="err" class="error-box"></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>Email or Phone</label>
+        <input type="text" id="emailOrPhone" placeholder="you@email.com or 98XXXXXXXX" required />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••" required />
+      </div>
+      <p style="text-align:right;margin-top:-8px;"><a class="link" href="#">Forgot password?</a></p>
+      <button class="btn" type="submit" id="loginBtn">Login</button>
+    </form>
+
+    <p style="text-align:center;margin-top:20px;" class="muted">
+      Don't have an account? <a class="link" href="register.html">Register</a>
+    </p>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError('err');
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true; btn.textContent = 'Logging in...';
+    try {
+      const data = await api('/auth/login', {
+        method: 'POST',
+        body: {
+          emailOrPhone: document.getElementById('emailOrPhone').value.trim(),
+          password: document.getElementById('password').value
+        }
+      });
+      Auth.setToken(data.token);
+      Auth.setUser(data.user);
+      window.location.href = 'home.html';
+    } catch (err) {
+      if (err.data && err.data.needs_otp) {
+        sessionStorage.setItem('otp_phone', err.data.phone);
+        sessionStorage.setItem('otp_purpose', 'login');
+        if (err.data.debug_otp) sessionStorage.setItem('debug_otp', err.data.debug_otp);
+        window.location.href = 'otp.html';
+        return;
+      }
+      showError('err', err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Login';
+    }
+  });
+</script>
+</body>
+</html>

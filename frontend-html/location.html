@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Set Location - Prajal</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="screen">
+  <div class="topbar"><span class="back" onclick="history.back()">&#8592;</span><h1 id="bikeName">Set Location</h1></div>
+  <div class="content">
+    <div class="field">
+      <label>Pick Up Location *</label>
+      <input id="pickup" placeholder="Select pickup location" value="Satungal Station" />
+    </div>
+    <div class="field">
+      <label>Return Location *</label>
+      <input id="dropoff" placeholder="Select return location" value="Satungal Station" />
+    </div>
+    <div class="field">
+      <label>Start date</label>
+      <input id="startDate" type="date" />
+    </div>
+    <div class="field">
+      <label>Return date</label>
+      <input id="endDate" type="date" />
+    </div>
+
+    <div id="err" class="error-box"></div>
+    <div class="card row-between">
+      <span class="price" id="priceLabel" style="font-weight:800;">Rs -</span>
+      <button class="btn" style="width:auto;padding:12px 24px;" id="orderBtn">Order now</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  Auth.requireAuth();
+  const bikeId = new URLSearchParams(location.search).get('bikeId');
+
+  const today = new Date();
+  const tomorrow = new Date(Date.now() + 86400000);
+  document.getElementById('startDate').value = today.toISOString().slice(0, 10);
+  document.getElementById('endDate').value = tomorrow.toISOString().slice(0, 10);
+
+  let bike;
+  async function loadBike() {
+    bike = await api(`/bikes/${bikeId}`);
+    document.getElementById('bikeName').textContent = bike.name;
+    document.getElementById('priceLabel').textContent = formatMoney(bike.price_per_day) + '+';
+  }
+  loadBike();
+
+  document.getElementById('orderBtn').addEventListener('click', async () => {
+    clearError('err');
+    const pickup = document.getElementById('pickup').value.trim();
+    const dropoff = document.getElementById('dropoff').value.trim();
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    if (!pickup || !dropoff || !startDate || !endDate) {
+      return showError('err', 'Please fill in all fields.');
+    }
+    if (new Date(endDate) < new Date(startDate)) {
+      return showError('err', 'Return date must be after the start date.');
+    }
+    const btn = document.getElementById('orderBtn');
+    btn.disabled = true; btn.textContent = 'Booking...';
+    try {
+      const booking = await api('/bookings', {
+        method: 'POST',
+        auth: true,
+        body: {
+          motorbike_id: bikeId,
+          pickup_location: pickup,
+          return_location: dropoff,
+          start_date: startDate,
+          end_date: endDate
+        }
+      });
+      location.href = `payment.html?bookingId=${booking.id}`;
+    } catch (err) {
+      showError('err', err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Order now';
+    }
+  });
+</script>
+</body>
+</html>

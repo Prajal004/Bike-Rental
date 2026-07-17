@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Order - Prajal</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="screen">
+  <div class="topbar"><span class="back" onclick="location.href='orders.html'">&#8592;</span><h1>Order Details</h1></div>
+  <div class="content" id="content">Loading...</div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  Auth.requireAuth();
+  const bookingId = new URLSearchParams(location.search).get('bookingId');
+
+  async function load() {
+    try {
+      const b = await api(`/bookings/${bookingId}`, { auth: true });
+      document.getElementById('content').innerHTML = `
+        <div class="card">
+          <div class="row-between">
+            <b>${b.bike_name}</b>
+            <span class="status-badge status-${b.status}">${b.status.replace('_',' ')}</span>
+          </div>
+          <p class="muted">Order #${b.order_no}</p>
+        </div>
+        <div class="card">
+          <div class="summary-row"><span>Pick Up Location</span><span>${b.pickup_location}</span></div>
+          <div class="summary-row"><span>Return Location</span><span>${b.return_location}</span></div>
+          <div class="summary-row"><span>Start</span><span>${b.start_date}</span></div>
+          <div class="summary-row"><span>Return</span><span>${b.end_date}</span></div>
+          <div class="summary-row total"><span>Total payment</span><span>${formatMoney(b.total)}</span></div>
+        </div>
+        <button class="btn secondary" onclick="location.href='chat.html?bookingId=${b.id}'">Contact the Rental Office</button>
+        ${!['completed','cancelled'].includes(b.status) ? `<button class="btn danger" style="margin-top:10px;" id="cancelBtn">Cancel Order</button>` : ''}
+      `;
+      const cancelBtn = document.getElementById('cancelBtn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', async () => {
+          if (!confirm('Cancel this order?')) return;
+          await api(`/bookings/${b.id}/cancel`, { method: 'POST', auth: true });
+          load();
+        });
+      }
+    } catch (err) {
+      document.getElementById('content').innerHTML = `<p class="error-box show">${err.message}</p>`;
+    }
+  }
+  load();
+</script>
+</body>
+</html>

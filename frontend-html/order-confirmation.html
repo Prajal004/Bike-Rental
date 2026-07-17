@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Order Confirmation - Prajal</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="screen">
+  <div class="center-flow">
+    <div class="check-circle">&#10003;</div>
+    <h2>Your motorbike has been successfully ordered</h2>
+    <p class="muted">Your order confirmation has already been sent to your email, you can check your order status by tapping the button below.</p>
+    <button class="btn" style="margin-top:20px;" onclick="goToOrder()">Order Confirmation</button>
+  </div>
+</div>
+<script>
+  const bookingId = new URLSearchParams(location.search).get('bookingId');
+  function goToOrder() { location.href = `order-detail.html?bookingId=${bookingId}`; }
+</script>
+</body>
+</html>
