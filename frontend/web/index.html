@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bike Rental - Ride Anywhere</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background: #0b1f17;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    h1 span {
+      color: #f2b705;
+    }
+    p {
+      color: #a9c2b6;
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 16px 40px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      margin: 8px;
+      transition: 0.2s;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+    }
+    .btn-primary {
+      background: #1f7a4d;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #155c3a;
+    }
+    .btn-download {
+      background: #f2b705;
+      color: #0b1f17;
+    }
+    .btn-download:hover {
+      background: #e6a800;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bike <span>Rental</span></h1>
+    <p>Rent a bike anywhere, anytime</p>
+    <div>
+      <a href="https://bike-rental-pi-dusky.vercel.app" class="btn btn-primary" target="_blank">
+        Book Now
+      </a>
+      <a href="https://bike-rental-pi-dusky.vercel.app/bike-rental.apk" class="btn btn-download" download>
+        Download App
+      </a>
+    </div>
+  </div>
+</body>
+</html>

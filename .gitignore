@@ -8,40 +8,33 @@ Thumbs.db
 .flutter-plugins-dependencies
 .pub/
 build/
-*.lock
 
 # Android
 *.apk
 *.aab
 android/.gradle/
+**/.gradle/
 
 # iOS
 ios/Flutter/Generated*.xcconfig
 ios/Flutter/flutter_export_environment*.sh
-
-# Duplicate files
-* 2*
-* 3*
-* 4*
-* 5*
-* 6*
-* 7*
-* 8*
 
 # IDE
 *.iml
 .idea/
 .vscode/
 
-# Misc
+# Node
+node_modules/
+
+# Project build files
 frontend/build/
 frontend/.dart_tool/
 frontend/.flutter-plugins*
-frontend/android/.gradle/
+
+# Memory dumps
 *.hprof
-*.hprof
-*.png
-*.jpg
-*.hprof
+
+# Images (if generated files)
 *.png
 *.jpg
