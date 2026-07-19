@@ -9,6 +9,13 @@ connectDB();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/location', require('./routes/locationRoutes'));
+app.use('/api/motorcycles', require('./routes/motorcycleRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/referrals', require('./routes/referralRoutes'));
+app.use('/api/rentals', require('./routes/rentalRoutes'));
+app.use('/api/sos', require('./routes/sosRoutes'));
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
