@@ -119,7 +119,6 @@ class HomeScreen extends StatelessWidget {
                     title: 'Book Now',
                     color: const Color(0xFF1A394F),
                     onTap: () {
-                      // TODO: Navigate to booking page
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Booking page coming soon!'),
