@@ -3,79 +3,431 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- ✅ META DESCRIPTION ADDED -->
+  <meta name="description" content="Rent a bike anywhere in Kathmandu Valley. Book bikes in minutes, pay online or cash. Quick booking, flexible payment, multiple stations.">
+  <meta name="keywords" content="bike rental, motorcycle rental, Kathmandu, Nepal, rent bike, book bike">
+  <meta name="author" content="Bike Rental Nepal">
+  
   <title>Bike Rental - Ride Anywhere</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif;
     }
+
     body {
       background: #0b1f17;
       color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
     }
+
     .container {
-      text-align: center;
-      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
     }
-    h1 {
-      font-size: 48px;
-      margin-bottom: 16px;
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 30px;
+      flex-wrap: wrap;
+      gap: 16px;
     }
-    h1 span {
+
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .logo span {
       color: #f2b705;
     }
-    p {
-      color: #a9c2b6;
-      font-size: 18px;
-      margin-bottom: 30px;
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
     }
-    .btn {
-      display: inline-block;
-      padding: 16px 40px;
-      border-radius: 40px;
-      font-weight: 700;
-      font-size: 16px;
+    .nav-links a {
+      color: #a9c2b6;
       text-decoration: none;
-      margin: 8px;
+      font-weight: 500;
       transition: 0.2s;
     }
-    .btn:hover {
-      transform: scale(1.05);
+    .nav-links a:hover {
+      color: white;
     }
     .btn-primary {
       background: #1f7a4d;
-      color: white;
+      color: white !important;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-weight: 700 !important;
+      transition: 0.2s;
+      text-decoration: none;
     }
     .btn-primary:hover {
       background: #155c3a;
     }
+
     .btn-download {
       background: #f2b705;
-      color: #0b1f17;
+      color: #0b1f17 !important;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-weight: 700 !important;
+      transition: 0.2s;
+      text-decoration: none;
+      display: inline-block;
     }
     .btn-download:hover {
       background: #e6a800;
+      transform: scale(1.02);
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      gap: 50px;
+      padding: 40px 0 60px;
+      flex-wrap: wrap;
+    }
+
+    .hero-text {
+      flex: 1;
+      min-width: 280px;
+    }
+    .hero-text h1 {
+      font-size: 48px;
+      font-weight: 800;
+      font-family: 'Space Grotesk', sans-serif;
+      line-height: 1.2;
+    }
+    .hero-text h1 span {
+      color: #f2b705;
+    }
+    .hero-text p {
+      color: #a9c2b6;
+      font-size: 18px;
+      margin: 20px 0 30px;
+      max-width: 450px;
+      line-height: 1.6;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-hero {
+      padding: 16px 36px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.2s;
+    }
+    .btn-hero.primary {
+      background: #1f7a4d;
+      color: white;
+    }
+    .btn-hero.primary:hover {
+      background: #155c3a;
+      transform: scale(1.02);
+    }
+    .btn-hero.download {
+      background: #f2b705;
+      color: #0b1f17;
+      border: none;
+    }
+    .btn-hero.download:hover {
+      background: #e6a800;
+      transform: scale(1.02);
+    }
+
+    .hero-mockup {
+      flex: 1;
+      min-width: 200px;
+      text-align: center;
+    }
+    .hero-mockup .phone-frame {
+      background: #1e293b;
+      padding: 20px 16px;
+      border-radius: 32px;
+      border: 2px solid #334155;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+    .hero-mockup .phone-frame .screen {
+      background: #f6f5ef;
+      border-radius: 20px;
+      padding: 16px;
+      color: #0b1f17;
+      min-height: 200px;
+    }
+    .hero-mockup .phone-frame .screen i {
+      font-size: 40px;
+      color: #1f7a4d;
+    }
+    .hero-mockup .phone-frame .screen h3 {
+      margin: 10px 0 6px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .hero-mockup .phone-frame .screen p {
+      font-size: 13px;
+      color: #6b7a72;
+    }
+    .mockup-badges {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+    .mockup-badges span {
+      background: #1f7a4d;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+    }
+    .mockup-badges .gold {
+      background: #f2b705;
+      color: #0b1f17;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      padding: 60px 0;
+    }
+    .feature {
+      background: rgba(255,255,255,0.05);
+      padding: 30px 20px;
+      border-radius: 20px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: 0.3s;
+    }
+    .feature:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-4px);
+    }
+    .feature i {
+      font-size: 32px;
+      color: #f2b705;
+      margin-bottom: 12px;
+    }
+    .feature h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .feature p {
+      color: #a9c2b6;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .download-section {
+      background: rgba(31,122,77,0.15);
+      border-radius: 30px;
+      padding: 50px 30px;
+      text-align: center;
+      border: 1px solid rgba(31,122,77,0.2);
+      margin: 30px 0;
+    }
+    .download-section h2 {
+      font-size: 32px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .download-section h2 span {
+      color: #f2b705;
+    }
+    .download-section p {
+      color: #a9c2b6;
+      margin: 12px 0 30px;
+      font-size: 16px;
+    }
+    .download-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .download-btn {
+      background: #1e293b;
+      padding: 14px 30px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: 0.2s;
+    }
+    .download-btn:hover {
+      background: #334155;
+      transform: scale(1.03);
+    }
+    .download-btn i {
+      font-size: 28px;
+      color: #f2b705;
+    }
+    .download-btn .small {
+      font-size: 11px;
+      color: #a9c2b6;
+    }
+    .download-btn .big {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .footer {
+      padding: 30px 0 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer p {
+      color: #6b7a72;
+      font-size: 14px;
+    }
+    .footer a {
+      color: #a9c2b6;
+      text-decoration: none;
+      margin-left: 20px;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    .footer a:hover {
+      color: #f2b705;
+    }
+
+    @media (max-width: 700px) {
+      .hero-text h1 { font-size: 32px; }
+      .navbar { flex-direction: column; }
+      .nav-links { justify-content: center; }
+      .footer { flex-direction: column; text-align: center; }
+      .footer a { margin: 0 12px; }
+      .hero { padding: 20px 0 30px; }
+      .download-section { padding: 30px 20px; }
+      .download-section h2 { font-size: 24px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Bike <span>Rental</span></h1>
-    <p>Rent a bike anywhere, anytime</p>
-    <div>
-      <a href="https://bike-rental-pi-dusky.vercel.app" class="btn btn-primary" target="_blank">
-        Book Now
+
+<div class="container">
+
+  <nav class="navbar">
+    <div class="logo">Bike <span>Rental</span></div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#download">Download</a>
+      <a href="https://bike-rental-pi-dusky.vercel.app" class="btn-primary" target="_blank">Open App</a>
+      <a href="https://bike-rental-pi-dusky.vercel.app/bike-rental.apk" download class="btn-download">📲 Download APK</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Rent a bike <br><span>anywhere, anytime</span></h1>
+      <p>Book bikes in minutes from stations across Kathmandu Valley. Pay online or cash — it's your ride.</p>
+      <div class="hero-buttons">
+        <a href="https://bike-rental-pi-dusky.vercel.app" class="btn-hero primary" target="_blank">
+          <i class="fas fa-motorcycle"></i> Book Now
+        </a>
+        <a href="https://bike-rental-pi-dusky.vercel.app/bike-rental.apk" download class="btn-hero download">
+          <i class="fas fa-download"></i> Download App
+        </a>
+      </div>
+    </div>
+    <div class="hero-mockup">
+      <div class="phone-frame">
+        <div class="screen">
+          <i class="fas fa-motorcycle"></i>
+          <h3>Bike Rental</h3>
+          <p>Ride anywhere in the valley</p>
+          <div class="mockup-badges">
+            <span>Book</span>
+            <span class="gold">Ride</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="feature">
+      <i class="fas fa-bolt"></i>
+      <h3>Quick Booking</h3>
+      <p>Book a bike in under 2 minutes — no paperwork.</p>
+    </div>
+    <div class="feature">
+      <i class="fas fa-wallet"></i>
+      <h3>Flexible Pay</h3>
+      <p>eSewa, Khalti, bank transfer, or cash on pickup.</p>
+    </div>
+    <div class="feature">
+      <i class="fas fa-map-pin"></i>
+      <h3>Multiple Stations</h3>
+      <p>Find bikes near you — Satungal, Lazimpat, Patan & more.</p>
+    </div>
+    <div class="feature">
+      <i class="fas fa-shield-alt"></i>
+      <h3>Safe & Reliable</h3>
+      <p>Helmets, raincoats & well-maintained bikes.</p>
+    </div>
+  </section>
+
+  <section class="download-section" id="download">
+    <h2>📲 Get the <span>App</span></h2>
+    <p>Download the APK or use the web app directly.</p>
+    <div class="download-buttons">
+      <a href="https://bike-rental-pi-dusky.vercel.app" class="download-btn" target="_blank">
+        <i class="fas fa-globe"></i>
+        <div>
+          <div class="small">Open in Browser</div>
+          <div class="big">Web App</div>
+        </div>
       </a>
-      <a href="https://bike-rental-pi-dusky.vercel.app/bike-rental.apk" class="btn btn-download" download>
-        Download App
+      <a href="https://bike-rental-pi-dusky.vercel.app/bike-rental.apk" download class="download-btn">
+        <i class="fab fa-android"></i>
+        <div>
+          <div class="small">Download for Android</div>
+          <div class="big">APK (53 MB)</div>
+        </div>
       </a>
     </div>
-  </div>
+    <p style="margin-top:16px; font-size:13px; color:#6b7a72;">iOS version coming soon.</p>
+  </section>
+
+  <footer class="footer">
+    <p>&copy; 2026 Bike Rental. Built with ❤️ in Nepal.</p>
+    <div>
+      <a href="https://bike-rental-pi-dusky.vercel.app" target="_blank">App</a>
+      <a href="https://bike-rental-pi-dusky.vercel.app/bike-rental.apk" download>Download APK</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+
+</div>
+
 </body>
 </html>
