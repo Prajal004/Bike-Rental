@@ -30,21 +30,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _register() {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-
-      // Simulate API call
+      
       Future.delayed(const Duration(seconds: 1), () {
         final auth = Provider.of<AuthProvider>(context, listen: false);
         auth.register(
           name: _nameController.text,
           email: _emailController.text,
         );
-
+        
         setState(() => _isLoading = false);
-
-        // Navigate to home
         Navigator.pushReplacementNamed(context, '/home');
-
-        // Show success message
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Account created successfully!'),
@@ -59,13 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Create Account',
-          style: TextStyle(
-            color: Color(0xFF1A394F),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text('Create Account'),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -81,7 +71,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
                 Center(
                   child: Column(
                     children: [
@@ -118,7 +107,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Full Name
                 const Text(
                   'Full Name',
                   style: TextStyle(
@@ -132,8 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _nameController,
                   decoration: const InputDecoration(
                     hintText: 'Ashish Shah',
-                    prefixIcon:
-                        Icon(Icons.person_outline, color: Color(0xFF1A394F)),
+                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFF1A394F)),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -144,7 +131,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Email
                 const Text(
                   'Email',
                   style: TextStyle(
@@ -158,8 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   decoration: const InputDecoration(
                     hintText: 'email@example.com',
-                    prefixIcon:
-                        Icon(Icons.email_outlined, color: Color(0xFF1A394F)),
+                    prefixIcon: Icon(Icons.email_outlined, color: Color(0xFF1A394F)),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -174,7 +159,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Phone Number
                 const Text(
                   'Phone Number',
                   style: TextStyle(
@@ -188,8 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _phoneController,
                   decoration: const InputDecoration(
                     hintText: '9863330576',
-                    prefixIcon:
-                        Icon(Icons.phone_outlined, color: Color(0xFF1A394F)),
+                    prefixIcon: Icon(Icons.phone_outlined, color: Color(0xFF1A394F)),
                   ),
                   keyboardType: TextInputType.phone,
                   validator: (value) {
@@ -204,7 +187,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Password
                 const Text(
                   'Password',
                   style: TextStyle(
@@ -219,13 +201,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     hintText: '••••••••',
-                    prefixIcon: const Icon(Icons.lock_outline,
-                        color: Color(0xFF1A394F)),
+                    prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF1A394F)),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
                         color: Colors.grey,
                       ),
                       onPressed: () {
@@ -245,7 +224,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Sign Up Button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
@@ -275,7 +253,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Login link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
