@@ -12,10 +12,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
   bool _isLoading = false;
 
   final List<Map<String, dynamic>> _paymentMethods = [
-    {'id': 'esewa', 'name': 'eSewa', 'icon': Icons.wallet, 'color': Colors.green},
-    {'id': 'khalti', 'name': 'Khalti', 'icon': Icons.account_balance_wallet, 'color': Colors.purple},
-    {'id': 'fonepay', 'name': 'Fonepay QR', 'icon': Icons.qr_code_scanner, 'color': Colors.blue},
-    {'id': 'cash', 'name': 'Cash on Pickup', 'icon': Icons.money, 'color': Colors.orange},
+    {
+      'id': 'esewa',
+      'name': 'eSewa',
+      'icon': Icons.wallet,
+      'color': Colors.green
+    },
+    {
+      'id': 'khalti',
+      'name': 'Khalti',
+      'icon': Icons.account_balance_wallet,
+      'color': Colors.purple
+    },
+    {
+      'id': 'fonepay',
+      'name': 'Fonepay QR',
+      'icon': Icons.qr_code_scanner,
+      'color': Colors.blue
+    },
+    {
+      'id': 'cash',
+      'name': 'Cash on Pickup',
+      'icon': Icons.money,
+      'color': Colors.orange
+    },
   ];
 
   @override
@@ -40,7 +60,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            ..._paymentMethods.map((method) => _buildPaymentOption(method)),
+            RadioGroup<String>(
+              groupValue: _selectedMethod,
+              onChanged: (value) {
+                setState(() {
+                  _selectedMethod = value!;
+                });
+              },
+              child: Column(
+                children: _paymentMethods
+                    .map((method) => _buildPaymentOption(method))
+                    .toList(),
+              ),
+            ),
             const Spacer(),
             Container(
               padding: const EdgeInsets.all(16),
@@ -124,7 +156,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: method['color'].withOpacity(0.1),
+                color: method['color'].withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -143,14 +175,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
               ),
             ),
-            Radio(
+            Radio<String>(
               value: method['id'],
-              groupValue: _selectedMethod,
-              onChanged: (value) {
-                setState(() {
-                  _selectedMethod = value as String;
-                });
-              },
               activeColor: const Color(0xFF1A394F),
             ),
           ],
@@ -163,14 +189,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 2));
     setState(() => _isLoading = false);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Payment Successful! 🎉'),
         backgroundColor: Colors.green,
       ),
     );
-    
+
     Navigator.pushNamed(context, '/confirmation');
   }
 }

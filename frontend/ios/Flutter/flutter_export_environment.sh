@@ -2,6 +2,7 @@
 # This is a generated file; do not edit or check into version control.
 export "FLUTTER_ROOT=/Users/prajalshah/flutter"
 export "FLUTTER_APPLICATION_PATH=/Users/prajalshah/Desktop/Motorcycle Rental  Apps/frontend"
+export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/Users/prajalshah/Desktop/Motorcycle Rental  Apps/frontend/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"
