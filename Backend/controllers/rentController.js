@@ -12,12 +12,10 @@ const createRental = async (req, res) => {
       paymentMethod
     } = req.body;
     
-    // Calculate days
     const start = new Date(startDate);
     const end = new Date(endDate);
     const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     
-    // Get motorcycle
     const motorcycle = await Motorcycle.findById(motorcycleId);
     if (!motorcycle) {
       return res.status(404).json({
@@ -26,12 +24,10 @@ const createRental = async (req, res) => {
       });
     }
     
-    // Calculate price
     const basePrice = motorcycle.pricePerDay * duration;
     const totalPrice = basePrice + 1000;
     const rentalId = 'RENT' + Date.now();
     
-    // Create and SAVE to database
     const rental = new Rental({
       rentalId: rentalId,
       user: req.user.id,
@@ -50,7 +46,6 @@ const createRental = async (req, res) => {
       status: 'pending'
     });
     
-    // Save to database
     await rental.save();
     
     res.status(201).json({
@@ -73,7 +68,95 @@ const createRental = async (req, res) => {
   }
 };
 
+// ✅ ADDED: Get user rentals
+const getUserRentals = async (req, res) => {
+  try {
+    const rentals = await Rental.find({ user: req.user.id })
+      .populate('motorcycle', 'name brand pricePerDay images')
+      .sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      rentals
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// ✅ ADDED: Get rental by ID
+const getRentalById = async (req, res) => {
+  try {
+    const rental = await Rental.findById(req.params.id)
+      .populate('motorcycle')
+      .populate('user', 'fullName email phone');
+    
+    if (!rental) {
+      return res.status(404).json({
+        success: false,
+        message: 'Rental not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      rental
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// ✅ ADDED: Cancel rental
+const cancelRental = async (req, res) => {
+  try {
+    const rental = await Rental.findById(req.params.id);
+    
+    if (!rental) {
+      return res.status(404).json({
+        success: false,
+        message: 'Rental not found'
+      });
+    }
+    
+    if (rental.user.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to cancel this rental'
+      });
+    }
+    
+    if (rental.status === 'completed' || rental.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot cancel this rental'
+      });
+    }
+    
+    rental.status = 'cancelled';
+    await rental.save();
+    
+    res.json({
+      success: true,
+      message: 'Rental cancelled successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   createRental,
-  // ... other functions
+  getUserRentals,
+  getRentalById,
+  cancelRental
 };

@@ -1,23 +1,15 @@
-const axios = require('axios');
-
+// Mock SMS configuration for development
 const sendSMS = async (phoneNumber, message) => {
-  try {
-    // Using Sparrow SMS API (Popular in Nepal)
-    const response = await axios.post(process.env.SMS_API_URL, {
-      token: process.env.SMS_API_KEY,
-      from: process.env.SMS_SENDER_ID,
-      to: phoneNumber,
-      text: message,
-    });
-    
-    console.log(`✅ SMS sent to ${phoneNumber}: ${message}`);
-    return { success: true, response: response.data };
-  } catch (error) {
-    console.error(`❌ SMS failed: ${error.message}`);
-    // Fallback: Log SMS for development
-    console.log(`📱 [SMS FALLBACK] To: ${phoneNumber}, Message: ${message}`);
-    return { success: false, error: error.message };
-  }
+  console.log(`📱 [MOCK SMS] To: ${phoneNumber}`);
+  console.log(`📝 [MOCK SMS] Message: ${message}`);
+  
+  // Simulate API call
+  return { 
+    success: true, 
+    data: { 
+      message: 'SMS sent successfully (MOCK)' 
+    } 
+  };
 };
 
 module.exports = { sendSMS };

@@ -1,3 +1,4 @@
+const { sequelize } = require('../config/database');
 const Motorcycle = require('../models/Motorcycle');
 
 // @desc    Get all motorcycles
@@ -7,28 +8,30 @@ const getMotorcycles = async (req, res) => {
   try {
     const { page = 1, limit = 20, featured, brand, minPrice, maxPrice } = req.query;
     
-    const query = { available: true };
+    const where = { available: true };
     
     if (featured === 'true') {
-      query.featured = true;
+      where.featured = true;
     }
     
     if (brand) {
-      query.brand = brand;
+      where.brand = brand;
     }
     
     if (minPrice || maxPrice) {
-      query.pricePerDay = {};
-      if (minPrice) query.pricePerDay.$gte = parseInt(minPrice);
-      if (maxPrice) query.pricePerDay.$lte = parseInt(maxPrice);
+      where.pricePerDay = {};
+      if (minPrice) where.pricePerDay.$gte = parseInt(minPrice);
+      if (maxPrice) where.pricePerDay.$lte = parseInt(maxPrice);
     }
     
-    const motorcycles = await Motorcycle.find(query)
-      .sort({ featured: -1, createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+    const motorcycles = await Motorcycle.findAll({
+      where,
+      order: [['featured', 'DESC'], ['createdAt', 'DESC']],
+      limit: parseInt(limit),
+      offset: (page - 1) * limit,
+    });
     
-    const total = await Motorcycle.countDocuments(query);
+    const total = await Motorcycle.count({ where });
     
     res.status(200).json({
       success: true,
@@ -41,7 +44,7 @@ const getMotorcycles = async (req, res) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
@@ -51,8 +54,10 @@ const getMotorcycles = async (req, res) => {
 // @access  Public
 const getFeaturedMotorcycles = async (req, res) => {
   try {
-    const motorcycles = await Motorcycle.find({ featured: true, available: true })
-      .limit(10);
+    const motorcycles = await Motorcycle.findAll({
+      where: { featured: true, available: true },
+      limit: 10,
+    });
     
     res.status(200).json({
       success: true,
@@ -62,7 +67,7 @@ const getFeaturedMotorcycles = async (req, res) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
@@ -72,7 +77,7 @@ const getFeaturedMotorcycles = async (req, res) => {
 // @access  Public
 const getMotorcycleById = async (req, res) => {
   try {
-    const motorcycle = await Motorcycle.findById(req.params.id);
+    const motorcycle = await Motorcycle.findByPk(req.params.id);
     
     if (!motorcycle) {
       return res.status(404).json({
@@ -89,7 +94,7 @@ const getMotorcycleById = async (req, res) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
@@ -108,31 +113,50 @@ const getNearbyMotorcycles = async (req, res) => {
       });
     }
     
-    const motorcycles = await Motorcycle.find({
-      available: true,
-      location: {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: [parseFloat(lng), parseFloat(lat)],
-          },
-          $maxDistance: radius * 1000, // Convert km to meters
-        },
-      },
-    }).limit(20);
+    // Sequelize geospatial query
+    const motorcycles = await Motorcycle.findAll({
+      where: { available: true },
+      // Note: For geospatial queries, you might need PostGIS extension
+      // For now, return all and filter in code
+    });
+    
+    // Simple distance filter (in production, use PostGIS)
+    const nearbyMotorcycles = motorcycles.filter(bike => {
+      if (!bike.locationLat || !bike.locationLng) return false;
+      const distance = calculateDistance(
+        parseFloat(lat),
+        parseFloat(lng),
+        bike.locationLat,
+        bike.locationLng
+      );
+      return distance <= radius;
+    });
     
     res.status(200).json({
       success: true,
-      motorcycles,
+      motorcycles: nearbyMotorcycles,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
+
+// Helper function to calculate distance
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
 // @desc    Search motorcycles
 // @route   GET /api/motorcycles/search
@@ -148,14 +172,18 @@ const searchMotorcycles = async (req, res) => {
       });
     }
     
-    const motorcycles = await Motorcycle.find({
-      $or: [
-        { name: { $regex: q, $options: 'i' } },
-        { nameNepali: { $regex: q, $options: 'i' } },
-        { brand: { $regex: q, $options: 'i' } },
-      ],
-      available: true,
-    }).limit(20);
+    const { Op } = require('sequelize');
+    const motorcycles = await Motorcycle.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${q}%` } },
+          { nameNepali: { [Op.iLike]: `%${q}%` } },
+          { brand: { [Op.iLike]: `%${q}%` } },
+        ],
+        available: true,
+      },
+      limit: 20,
+    });
     
     res.status(200).json({
       success: true,
@@ -165,7 +193,125 @@ const searchMotorcycles = async (req, res) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
+    });
+  }
+};
+
+// @desc    Add motorcycle (Shop owner)
+// @route   POST /api/motorcycles
+// @access  Private
+const addMotorcycle = async (req, res) => {
+  try {
+    const {
+      name,
+      nameNepali,
+      brand,
+      year,
+      cc,
+      pricePerDay,
+      pricePerWeek,
+      pricePerMonth,
+      securityDeposit,
+      images,
+      description,
+      descriptionNepali,
+      specifications,
+      locationLat,
+      locationLng,
+      locationAddress,
+    } = req.body;
+
+    const motorcycle = await Motorcycle.create({
+      name,
+      nameNepali,
+      brand,
+      year,
+      cc,
+      pricePerDay,
+      pricePerWeek,
+      pricePerMonth,
+      securityDeposit: securityDeposit || 1000,
+      images: images || [],
+      description,
+      descriptionNepali,
+      specifications: specifications || {},
+      locationLat,
+      locationLng,
+      locationAddress,
+      available: true,
+      featured: false,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Motorcycle added successfully',
+      motorcycle,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error',
+    });
+  }
+};
+
+// @desc    Update motorcycle
+// @route   PUT /api/motorcycles/:id
+// @access  Private
+const updateMotorcycle = async (req, res) => {
+  try {
+    const motorcycle = await Motorcycle.findByPk(req.params.id);
+    
+    if (!motorcycle) {
+      return res.status(404).json({
+        success: false,
+        message: 'Motorcycle not found',
+      });
+    }
+
+    await motorcycle.update(req.body);
+
+    res.status(200).json({
+      success: true,
+      message: 'Motorcycle updated successfully',
+      motorcycle,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error',
+    });
+  }
+};
+
+// @desc    Delete motorcycle
+// @route   DELETE /api/motorcycles/:id
+// @access  Private
+const deleteMotorcycle = async (req, res) => {
+  try {
+    const motorcycle = await Motorcycle.findByPk(req.params.id);
+    
+    if (!motorcycle) {
+      return res.status(404).json({
+        success: false,
+        message: 'Motorcycle not found',
+      });
+    }
+
+    await motorcycle.destroy();
+
+    res.status(200).json({
+      success: true,
+      message: 'Motorcycle deleted successfully',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error',
     });
   }
 };
@@ -176,4 +322,7 @@ module.exports = {
   getMotorcycleById,
   getNearbyMotorcycles,
   searchMotorcycles,
+  addMotorcycle,
+  updateMotorcycle,
+  deleteMotorcycle,
 };

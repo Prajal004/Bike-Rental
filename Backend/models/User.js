@@ -1,133 +1,125 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
   fullName: {
-    type: String,
-    required: [true, 'Please provide full name'],
-    trim: true,
+    type: DataTypes.STRING,
+    allowNull: false,
+    field: 'full_name',
   },
   email: {
-    type: String,
-    required: [true, 'Please provide email'],
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    lowercase: true,
-    trim: true,
   },
   phone: {
-    type: String,
-    required: [true, 'Please provide phone number'],
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    trim: true,
   },
   password: {
-    type: String,
-    required: [true, 'Please provide password'],
-    minlength: 6,
-    select: false,
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   preferredLanguage: {
-    type: String,
-    enum: ['ne', 'en'],
-    default: 'en',
+    type: DataTypes.ENUM('ne', 'en'),
+    defaultValue: 'en',
+    field: 'preferred_language',
   },
   profileImage: {
-    type: String,
-    default: '',
+    type: DataTypes.STRING,
+    defaultValue: '',
+    field: 'profile_image',
   },
   address: {
-    type: String,
-    default: '',
-  },
-  drivingLicense: {
-    licenseNumber: String,
-    imageUrl: String,
-    verified: { type: Boolean, default: false },
+    type: DataTypes.STRING,
+    defaultValue: '',
   },
   referralCode: {
-    type: String,
+    type: DataTypes.STRING,
     unique: true,
-    sparse: true,
+    field: 'referral_code',
   },
   referredBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null,
+    type: DataTypes.UUID,
+    field: 'referred_by',
   },
   walletBalance: {
-    type: Number,
-    default: 0,
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+    field: 'wallet_balance',
   },
   totalReferrals: {
-    type: Number,
-    default: 0,
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    field: 'total_referrals',
   },
   referralCreditsEarned: {
-    type: Number,
-    default: 0,
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+    field: 'referral_credits_earned',
   },
-  emergencyContacts: [
-    {
-      name: { type: String, required: true },
-      phone: { type: String, required: true },
-      relation: { type: String, required: true },
-    },
-  ],
+  emergencyContacts: {
+    type: DataTypes.JSONB,
+    defaultValue: [],
+    field: 'emergency_contacts',
+  },
   defaultPaymentMethod: {
-    type: String,
-    enum: ['esewa', 'khalti', 'fonepay', 'cash'],
-    default: 'cash',
+    type: DataTypes.ENUM('esewa', 'khalti', 'fonepay', 'cash'),
+    defaultValue: 'cash',
+    field: 'default_payment_method',
   },
   isVerified: {
-    type: Boolean,
-    default: false,
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'is_verified',
   },
-  otp: {
-    code: String,
-    expiresAt: Date,
+  otpCode: {
+    type: DataTypes.STRING,
+    field: 'otp_code',
+  },
+  otpExpiresAt: {
+    type: DataTypes.DATE,
+    field: 'otp_expires_at',
   },
   createdAt: {
-    type: Date,
-    default: Date.now,
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'created_at',
   },
   updatedAt: {
-    type: Date,
-    default: Date.now,
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'updated_at',
   },
-});
-
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
+}, {
+  tableName: 'users',
+  timestamps: true,
+  hooks: {
+    beforeCreate: async (user) => {
+      if (user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    },
+    beforeUpdate: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    },
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  this.updatedAt = Date.now();
-  next();
 });
 
-// Compare password method
-userSchema.methods.comparePassword = async function (enteredPassword) {
+// Instance method to compare password
+User.prototype.comparePassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate referral code if not exists
-userSchema.pre('save', async function (next) {
-  if (!this.referralCode && this.isNew) {
-    const baseCode = this.fullName.substring(0, 4).toUpperCase() + 
-                     this.phone.slice(-4);
-    this.referralCode = baseCode;
-    
-    let existingUser = await mongoose.model('User').findOne({ referralCode: this.referralCode });
-    let counter = 1;
-    while (existingUser) {
-      this.referralCode = `${baseCode}${counter}`;
-      existingUser = await mongoose.model('User').findOne({ referralCode: this.referralCode });
-      counter++;
-    }
-  }
-  next();
-});
-
-module.exports = mongoose.model('User', userSchema);
+module.exports = User;

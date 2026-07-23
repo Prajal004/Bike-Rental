@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');  // ✅ Import Op
 const Location = require('../models/Location');
 
 // @desc    Get all locations
@@ -7,22 +8,23 @@ const getLocations = async (req, res) => {
   try {
     const { type } = req.query;
     
-    const query = { isActive: true };
+    const where = { isActive: true };
     if (type) {
-      query.type = type;
+      where.type = type;
     }
     
-    const locations = await Location.find(query);
+    const locations = await Location.findAll({ where });
     
     res.status(200).json({
       success: true,
       locations,
+      total: locations.length,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error in getLocations:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
@@ -41,17 +43,15 @@ const getNearbyLocations = async (req, res) => {
       });
     }
     
-    // Simple distance calculation (in production, use geospatial queries)
-    const locations = await Location.find({ isActive: true });
+    const locations = await Location.findAll({ where: { isActive: true } });
     
-    // Calculate distance and filter
     const nearbyLocations = locations.filter(location => {
-      if (!location.coordinates) return false;
+      if (!location.latitude || !location.longitude) return false;
       const distance = calculateDistance(
         parseFloat(lat),
         parseFloat(lng),
-        location.coordinates.lat,
-        location.coordinates.lng
+        parseFloat(location.latitude),
+        parseFloat(location.longitude)
       );
       return distance <= radius;
     });
@@ -59,19 +59,20 @@ const getNearbyLocations = async (req, res) => {
     res.status(200).json({
       success: true,
       locations: nearbyLocations,
+      total: nearbyLocations.length,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error in getNearbyLocations:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
 
 // Helper function to calculate distance
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = 
@@ -96,52 +97,61 @@ const searchLocations = async (req, res) => {
       });
     }
     
-    const locations = await Location.find({
-      $or: [
-        { name: { $regex: q, $options: 'i' } },
-        { nameNepali: { $regex: q, $options: 'i' } },
-        { address: { $regex: q, $options: 'i' } },
-      ],
-      isActive: true,
-    }).limit(20);
+    const locations = await Location.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${q}%` } },
+          { nameNepali: { [Op.iLike]: `%${q}%` } },
+          { address: { [Op.iLike]: `%${q}%` } },
+        ],
+        isActive: true,
+      },
+      limit: 20,
+    });
     
     res.status(200).json({
       success: true,
       locations,
+      total: locations.length,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error in searchLocations:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
 
-// @desc    Validate location serviceability
+// @desc    Validate location
 // @route   POST /api/locations/validate
 // @access  Public
 const validateLocation = async (req, res) => {
   try {
     const { lat, lng } = req.body;
     
-    // Check if location is within serviceable areas
-    const serviceableLocations = await Location.find({ 
-      isActive: true, 
-      serviceable: true 
+    if (!lat || !lng) {
+      return res.status(400).json({
+        success: false,
+        message: 'Latitude and longitude required',
+      });
+    }
+    
+    const locations = await Location.findAll({ 
+      where: { isActive: true, serviceable: true } 
     });
     
     let isServiceable = false;
     let nearestLocation = null;
     let minDistance = Infinity;
     
-    for (const location of serviceableLocations) {
-      if (location.coordinates) {
+    for (const location of locations) {
+      if (location.latitude && location.longitude) {
         const distance = calculateDistance(
           lat,
           lng,
-          location.coordinates.lat,
-          location.coordinates.lng
+          parseFloat(location.latitude),
+          parseFloat(location.longitude)
         );
         
         if (distance < minDistance) {
@@ -149,7 +159,7 @@ const validateLocation = async (req, res) => {
           nearestLocation = location;
         }
         
-        if (distance <= 5) { // Within 5km
+        if (distance <= 5) {
           isServiceable = true;
           break;
         }
@@ -166,13 +176,13 @@ const validateLocation = async (req, res) => {
       } : null,
       message: isServiceable 
         ? 'Location is serviceable' 
-        : 'Location is outside service area. Please select a pickup location from our list.',
+        : 'Location is outside service area.',
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error in validateLocation:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };

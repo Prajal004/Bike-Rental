@@ -1,10 +1,9 @@
+const { Op } = require('sequelize');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { generateOTPWithExpiry } = require('../utils/generateOTP');
 const { sendOTP } = require('../utils/sendSMS');
-const { generateReferralCode } = require('../utils/generateReferralCode');
 
-// Generate JWT Token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
@@ -12,14 +11,25 @@ const generateToken = (id) => {
 };
 
 // @desc    Register user
-// @route   POST /api/auth/register
-// @access  Public
 const register = async (req, res) => {
   try {
     const { fullName, email, phone, password, referralCode } = req.body;
 
+    // ✅ Validate required fields
+    if (!fullName || !email || !phone || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required: fullName, email, phone, password',
+      });
+    }
+
     // Check if user exists
-    const userExists = await User.findOne({ $or: [{ email }, { phone }] });
+    const userExists = await User.findOne({
+      where: {
+        [Op.or]: [{ email }, { phone }]
+      }
+    });
+
     if (userExists) {
       return res.status(400).json({
         success: false,
@@ -35,57 +45,56 @@ const register = async (req, res) => {
       password,
     });
 
-    // Handle referral code if provided (FEATURE 2)
+    // Handle referral
     if (referralCode) {
-      const referrer = await User.findOne({ referralCode });
+      const referrer = await User.findOne({
+        where: { referralCode }
+      });
       if (referrer) {
-        user.referredBy = referrer._id;
+        user.referredBy = referrer.id;
         await user.save();
-        
-        // Create referral record
-        const Referral = require('../models/Referral');
-        await Referral.create({
-          referrer: referrer._id,
-          referee: user._id,
-          referralCode: referralCode,
-          status: 'pending',
-        });
       }
     }
 
-    // Generate and send OTP
+    // Generate OTP
     const { otp, expiresAt } = generateOTPWithExpiry();
-    user.otp = { code: otp, expiresAt };
+    user.otpCode = otp;
+    user.otpExpiresAt = expiresAt;
     await user.save();
 
-    // Send OTP via SMS
+    // Send OTP
     await sendOTP(phone, otp);
 
     res.status(201).json({
       success: true,
       message: 'User registered. OTP sent to your phone.',
-      userId: user._id,
+      userId: user.id,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Register Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message,
+      message: error.message || 'Server error',
     });
   }
 };
 
 // @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
-    const user = await User.findOne({ email }).select('+password');
-    
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required',
+      });
+    }
+
+    const user = await User.findOne({
+      where: { email },
+    });
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -93,7 +102,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Check password
     const isPasswordMatch = await user.comparePassword(password);
     if (!isPasswordMatch) {
       return res.status(401).json({
@@ -102,37 +110,41 @@ const login = async (req, res) => {
       });
     }
 
-    // Generate and send OTP
     const { otp, expiresAt } = generateOTPWithExpiry();
-    user.otp = { code: otp, expiresAt };
+    user.otpCode = otp;
+    user.otpExpiresAt = expiresAt;
     await user.save();
 
-    // Send OTP via SMS
     await sendOTP(user.phone, otp);
 
     res.status(200).json({
       success: true,
       message: 'OTP sent to your phone',
-      userId: user._id,
+      userId: user.id,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Login Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
 
 // @desc    Verify OTP
-// @route   POST /api/auth/verify-otp
-// @access  Public
 const verifyOTP = async (req, res) => {
   try {
     const { userId, otp } = req.body;
 
-    const user = await User.findById(userId);
-    
+    if (!userId || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'userId and otp are required',
+      });
+    }
+
+    const user = await User.findByPk(userId);
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -140,58 +152,57 @@ const verifyOTP = async (req, res) => {
       });
     }
 
-    // Check OTP
-    if (!user.otp || user.otp.code !== otp || user.otp.expiresAt < new Date()) {
+    if (!user.otpCode || user.otpCode !== otp || user.otpExpiresAt < new Date()) {
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired OTP',
       });
     }
 
-    // Clear OTP
-    user.otp = undefined;
+    user.otpCode = null;
+    user.otpExpiresAt = null;
     user.isVerified = true;
     await user.save();
 
-    // Generate token
-    const token = generateToken(user._id);
-
-    // Return user data (without sensitive info)
-    const userData = {
-      _id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      preferredLanguage: user.preferredLanguage,
-      referralCode: user.referralCode,
-      walletBalance: user.walletBalance,
-      emergencyContacts: user.emergencyContacts,
-    };
+    const token = generateToken(user.id);
 
     res.status(200).json({
       success: true,
       message: 'OTP verified successfully',
       token,
-      user: userData,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        phone: user.phone,
+        referralCode: user.referralCode,
+        walletBalance: user.walletBalance,
+        role: user.role || 'customer',
+      },
     });
   } catch (error) {
-    console.error(error);
+    console.error('Verify OTP Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
 
 // @desc    Resend OTP
-// @route   POST /api/auth/resend-otp
-// @access  Public
 const resendOTP = async (req, res) => {
   try {
     const { userId } = req.body;
 
-    const user = await User.findById(userId);
-    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'userId is required',
+      });
+    }
+
+    const user = await User.findByPk(userId);
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -199,12 +210,11 @@ const resendOTP = async (req, res) => {
       });
     }
 
-    // Generate new OTP
     const { otp, expiresAt } = generateOTPWithExpiry();
-    user.otp = { code: otp, expiresAt };
+    user.otpCode = otp;
+    user.otpExpiresAt = expiresAt;
     await user.save();
 
-    // Send OTP via SMS
     await sendOTP(user.phone, otp);
 
     res.status(200).json({
@@ -212,88 +222,37 @@ const resendOTP = async (req, res) => {
       message: 'OTP resent successfully',
     });
   } catch (error) {
-    console.error(error);
+    console.error('Resend OTP Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-    });
-  }
-};
-
-// @desc    Update language preference (FEATURE 3)
-// @route   PUT /api/auth/language
-// @access  Private
-const updateLanguage = async (req, res) => {
-  try {
-    const { language } = req.body; // 'ne' or 'en'
-    
-    if (!['ne', 'en'].includes(language)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid language. Use "ne" or "en"',
-      });
-    }
-
-    const user = await User.findById(req.user._id);
-    user.preferredLanguage = language;
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: `Language updated to ${language === 'ne' ? 'Nepali' : 'English'}`,
-      preferredLanguage: language,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
 
 // @desc    Get user profile
-// @route   GET /api/auth/profile
-// @access  Private
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id)
-      .select('-password -otp');
-    
+    const user = await User.findByPk(req.user.id, {
+      attributes: { exclude: ['password', 'otpCode', 'otpExpiresAt'] }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
     res.status(200).json({
       success: true,
       user,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Get Profile Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-    });
-  }
-};
-
-// @desc    Update emergency contacts (FEATURE 4)
-// @route   PUT /api/auth/emergency-contacts
-// @access  Private
-const updateEmergencyContacts = async (req, res) => {
-  try {
-    const { emergencyContacts } = req.body;
-    
-    const user = await User.findById(req.user._id);
-    user.emergencyContacts = emergencyContacts;
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Emergency contacts updated',
-      emergencyContacts: user.emergencyContacts,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
@@ -303,7 +262,5 @@ module.exports = {
   login,
   verifyOTP,
   resendOTP,
-  updateLanguage,
   getProfile,
-  updateEmergencyContacts,
 };

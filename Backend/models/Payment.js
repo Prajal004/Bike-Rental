@@ -1,77 +1,95 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const paymentSchema = new mongoose.Schema({
+const Payment = sequelize.define('Payment', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
   paymentId: {
-    type: String,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    required: true,
+    field: 'payment_id',
   },
-  rental: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Rental',
-    required: true,
+  rentalId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'rental_id',
   },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'user_id',
   },
   amount: {
-    type: Number,
-    required: true,
+    type: DataTypes.FLOAT,
+    allowNull: false,
   },
   originalAmount: {
-    type: Number,
-    required: true,
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    field: 'original_amount',
   },
   discountApplied: {
-    type: Number,
-    default: 0,
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+    field: 'discount_applied',
   },
   walletUsed: {
-    type: Number,
-    default: 0,
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+    field: 'wallet_used',
   },
   method: {
-    type: String,
-    enum: ['esewa', 'khalti', 'fonepay', 'cash'],
-    required: true,
+    type: DataTypes.ENUM('esewa', 'khalti', 'fonepay', 'cash'),
+    allowNull: false,
   },
   transactionId: {
-    type: String,
+    type: DataTypes.STRING,
+    field: 'transaction_id',
   },
   transactionData: {
-    type: mongoose.Schema.Types.Mixed,
+    type: DataTypes.JSONB,
+    field: 'transaction_data',
   },
   status: {
-    type: String,
-    enum: ['pending', 'success', 'failed'],
-    default: 'pending',
+    type: DataTypes.ENUM('pending', 'success', 'failed'),
+    defaultValue: 'pending',
   },
   paidAt: {
-    type: Date,
+    type: DataTypes.DATE,
+    field: 'paid_at',
   },
-  refundedAt: Date,
+  refundedAt: {
+    type: DataTypes.DATE,
+    field: 'refunded_at',
+  },
   refundAmount: {
-    type: Number,
-    default: 0,
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+    field: 'refund_amount',
   },
   createdAt: {
-    type: Date,
-    default: Date.now,
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'created_at',
   },
-});
-
-// Generate payment ID before saving
-paymentSchema.pre('save', function (next) {
-  if (!this.paymentId) {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    this.paymentId = `PAY${year}${month}${random}`;
+}, {
+  tableName: 'payments',
+  timestamps: true,
+  hooks: {
+    beforeCreate: (payment) => {
+      if (!payment.paymentId) {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        payment.paymentId = `PAY${year}${month}${random}`;
+      }
+    }
   }
-  next();
 });
 
-module.exports = mongoose.model('Payment', paymentSchema);
+module.exports = Payment;

@@ -1,39 +1,50 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const locationSchema = new mongoose.Schema({
+const Location = sequelize.define('Location', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
   name: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   nameNepali: {
-    type: String,
+    type: DataTypes.STRING,
+    field: 'name_nepali',
   },
   address: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING,
+    allowNull: false,
   },
-  addressNepali: String,
-  coordinates: {
-    lat: Number,
-    lng: Number,
+  addressNepali: {
+    type: DataTypes.STRING,
+    field: 'address_nepali',
+  },
+  latitude: {
+    type: DataTypes.DECIMAL(10, 8),
+  },
+  longitude: {
+    type: DataTypes.DECIMAL(11, 8),
   },
   type: {
-    type: String,
-    enum: ['pickup', 'return', 'both'],
-    default: 'both',
+    type: DataTypes.ENUM('pickup', 'return', 'both'),
+    defaultValue: 'both',
   },
   isActive: {
-    type: Boolean,
-    default: true,
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    field: 'is_active',
   },
   serviceable: {
-    type: Boolean,
-    default: true,
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+}, {
+  tableName: 'locations',
+  timestamps: true,  // ✅ Sequelize automatically adds createdAt & updatedAt
 });
 
-module.exports = mongoose.model('Location', locationSchema);
+module.exports = Location;

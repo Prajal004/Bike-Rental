@@ -1,8 +1,21 @@
-const { sendSMS } = require('../config/smsConfig');
+// Mock SMS for development
+const sendSMS = async (phoneNumber, message) => {
+  console.log(`📱 [DEV SMS] To: ${phoneNumber}`);
+  console.log(`📝 [DEV SMS] Message: ${message}`);
+  console.log('✅ [DEV SMS] Mock sent successfully!');
+  
+  // Return success for development
+  return { 
+    success: true, 
+    message: 'Mock SMS sent',
+    devMode: true 
+  };
+};
 
 // Send OTP via SMS
 const sendOTP = async (phoneNumber, otp) => {
   const message = `Your verification code for Motorcycle Rental App is: ${otp}. Valid for 10 minutes. - YourAppName`;
+  console.log(`📱 Sending OTP ${otp} to ${phoneNumber}`);
   return await sendSMS(phoneNumber, message);
 };
 
@@ -12,6 +25,7 @@ const sendSOSAlert = async (contactName, contactPhone, userName, location, mapsL
   return await sendSMS(contactPhone, message);
 };
 
+// Send referral bonus SMS
 const sendReferralBonusSMS = async (phoneNumber, amount, type) => {
   const message = type === 'earned' 
     ? `🎉 Congrats! You earned Rs ${amount} referral credit! Share your code to earn more. - YourAppName`
@@ -26,6 +40,7 @@ const sendRentalConfirmation = async (phoneNumber, rentalId, bikeName, startDate
 };
 
 module.exports = {
+  sendSMS,
   sendOTP,
   sendSOSAlert,
   sendReferralBonusSMS,

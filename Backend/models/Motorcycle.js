@@ -1,99 +1,124 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const motorcycleSchema = new mongoose.Schema({
+const Motorcycle = sequelize.define('Motorcycle', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
   name: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   nameNepali: {
-    type: String,
-    default: '',
+    type: DataTypes.STRING,
+    field: 'name_nepali',
   },
   brand: {
-    type: String,
-    required: true,
-    enum: ['Honda', 'Yamaha', 'Suzuki', 'TVS', 'Bajaj', 'Hero', 'Other'],
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   year: {
-    type: Number,
-    required: true,
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
   cc: {
-    type: Number,
-    required: true,
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
   pricePerDay: {
-    type: Number,
-    required: true,
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    field: 'price_per_day',
   },
   pricePerWeek: {
-    type: Number,
+    type: DataTypes.FLOAT,
+    field: 'price_per_week',
   },
   pricePerMonth: {
-    type: Number,
+    type: DataTypes.FLOAT,
+    field: 'price_per_month',
   },
   securityDeposit: {
-    type: Number,
-    default: 1000,
+    type: DataTypes.FLOAT,
+    defaultValue: 1000,
+    field: 'security_deposit',
   },
-  images: [{
-    type: String,
-  }],
+  images: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: [],
+  },
   description: {
-    type: String,
+    type: DataTypes.TEXT,
   },
   descriptionNepali: {
-    type: String,
+    type: DataTypes.TEXT,
+    field: 'description_nepali',
   },
   specifications: {
-    engine: String,
-    mileage: String,
-    fuelType: { type: String, default: 'Petrol' },
-    transmission: { type: String, enum: ['Manual', 'Automatic'] },
-    maxPower: String,
-    weight: String,
+    type: DataTypes.JSONB,
+    defaultValue: {},
   },
-  location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point',
-    },
-    coordinates: {
-      type: [Number],
-      required: true,
-      index: '2dsphere',
-    },
-    address: String,
-    addressNepali: String,
+  shopId: {
+    type: DataTypes.UUID,
+    allowNull: true,  // ✅ Made optional
+    field: 'shop_id',
   },
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+  locationLat: {
+    type: DataTypes.FLOAT,
+    field: 'location_lat',
+  },
+  locationLng: {
+    type: DataTypes.FLOAT,
+    field: 'location_lng',
+  },
+  locationAddress: {
+    type: DataTypes.STRING,
+    field: 'location_address',
   },
   available: {
-    type: Boolean,
-    default: true,
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
   },
   rating: {
-    type: Number,
-    default: 0,
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
   },
   totalRentals: {
-    type: Number,
-    default: 0,
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    field: 'total_rentals',
   },
   featured: {
-    type: Boolean,
-    default: false,
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  registrationCertificate: {
+    type: DataTypes.STRING,
+    field: 'registration_certificate',
   },
+  insuranceDocument: {
+    type: DataTypes.STRING,
+    field: 'insurance_document',
+  },
+  pollutionCertificate: {
+    type: DataTypes.STRING,
+    field: 'pollution_certificate',
+  },
+  isVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'is_verified',
+  },
+  verificationStatus: {
+    type: DataTypes.ENUM('pending', 'verified', 'rejected'),
+    defaultValue: 'pending',
+    field: 'verification_status',
+  },
+}, {
+  tableName: 'motorcycles',
+  timestamps: true,
 });
 
-// Create geospatial index
-motorcycleSchema.index({ location: '2dsphere' });
-
-module.exports = mongoose.model('Motorcycle', motorcycleSchema);
+module.exports = Motorcycle;
