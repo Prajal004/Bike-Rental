@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,25 +7,24 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 
-const OtpScreen = ({ route, navigation }) => {
+export default function OtpScreen({ route, navigation }) {
   const { userId } = route.params || {};
   const { verifyOTP, resendOTP } = useAuth();
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
-  const inputs = useRef([]);
 
   const handleVerify = async () => {
-    const otpCode = otp.join('');
-    if (otpCode.length !== 6) {
+    if (!otp || otp.length !== 6) {
       Alert.alert('Error', 'Please enter 6-digit OTP');
       return;
     }
 
     setLoading(true);
-    const result = await verifyOTP(userId, otpCode);
+    const result = await verifyOTP(userId, otp);
     setLoading(false);
 
     if (result.success) {
@@ -37,55 +36,52 @@ const OtpScreen = ({ route, navigation }) => {
 
   const handleResend = async () => {
     setLoading(true);
-    const result = await resendOTP(userId);
-    setLoading(false);
-    if (result.success) {
-      Alert.alert('Success', 'OTP resent successfully');
-    } else {
+    try {
+      const result = await resendOTP(userId);
+      if (result.success) {
+        Alert.alert('Success', 'OTP resent successfully');
+      }
+    } catch (error) {
       Alert.alert('Error', 'Failed to resend OTP');
-    }
-  };
-
-  const handleChange = (text, index) => {
-    const newOtp = [...otp];
-    newOtp[index] = text;
-    setOtp(newOtp);
-
-    if (text && index < 5) {
-      inputs.current[index + 1].focus();
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Verify OTP</Text>
       <Text style={styles.subtitle}>Enter the 6-digit code sent to your phone</Text>
 
-      <View style={styles.otpContainer}>
-        {otp.map((digit, index) => (
-          <TextInput
-            key={index}
-            ref={(ref) => (inputs.current[index] = ref)}
-            style={styles.otpInput}
-            value={digit}
-            onChangeText={(text) => handleChange(text, index)}
-            keyboardType="number-pad"
-            maxLength={1}
-            textAlign="center"
-          />
-        ))}
-      </View>
+      <TextInput
+        style={styles.otpInput}
+        placeholder="000000"
+        value={otp}
+        onChangeText={setOtp}
+        keyboardType="number-pad"
+        maxLength={6}
+        textAlign="center"
+        autoFocus
+      />
 
-      <TouchableOpacity style={styles.verifyButton} onPress={handleVerify} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.verifyButtonText}>Verify</Text>}
+      <TouchableOpacity
+        style={styles.verifyButton}
+        onPress={handleVerify}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.verifyButtonText}>Verify</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleResend}>
         <Text style={styles.resendText}>Resend OTP</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -105,25 +101,21 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 30,
   },
-  otpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 30,
-  },
   otpInput: {
-    width: 45,
-    height: 55,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: '#ddd',
-    borderRadius: 8,
-    fontSize: 24,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    letterSpacing: 8,
+    backgroundColor: '#fafafa',
+    marginBottom: 20,
   },
   verifyButton: {
-    backgroundColor: '#E63946',
+    backgroundColor: '#4CAF50',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 999,
     alignItems: 'center',
   },
   verifyButtonText: {
@@ -132,11 +124,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   resendText: {
-    color: '#E63946',
+    color: '#4CAF50',
     fontSize: 16,
     textAlign: 'center',
     marginTop: 20,
+    fontWeight: '600',
   },
 });
-
-export default OtpScreen;

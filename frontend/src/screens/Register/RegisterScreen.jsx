@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
+  View, Text, TextInput, TouchableOpacity,
+  StyleSheet, Alert, ActivityIndicator, ScrollView, SafeAreaView
 } from 'react-native';
 import authAPI from '../../api/auth.api';
 
-const RegisterScreen = ({ navigation }) => {
+export default function RegisterScreen({ navigation }) {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -25,16 +20,12 @@ const RegisterScreen = ({ navigation }) => {
       Alert.alert('Error', 'Please fill all fields');
       return;
     }
-
     setLoading(true);
     try {
       const response = await authAPI.register(formData);
       if (response.success) {
         Alert.alert('Success', 'Registration successful! Please verify OTP.', [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('OtpVerification', { userId: response.userId }),
-          },
+          { text: 'OK', onPress: () => navigation.navigate('OtpVerification', { userId: response.userId }) }
         ]);
       }
     } catch (error) {
@@ -45,102 +36,84 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Join the ride!</Text>
-
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Full Name"
-          value={formData.fullName}
-          onChangeText={(text) => setFormData({ ...formData, fullName: text })}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={formData.email}
-          onChangeText={(text) => setFormData({ ...formData, email: text })}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Phone"
-          value={formData.phone}
-          onChangeText={(text) => setFormData({ ...formData, phone: text })}
-          keyboardType="phone-pad"
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={formData.password}
-          onChangeText={(text) => setFormData({ ...formData, password: text })}
-          secureTextEntry
-        />
-
-        <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.registerButtonText}>Register</Text>}
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.loginLink}>Already have an account? Login</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Join the ride!</Text>
+        <View style={styles.form}>
+          <Text style={styles.label}>Full Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Your full name"
+            value={formData.fullName}
+            onChangeText={(text) => setFormData({ ...formData, fullName: text })}
+          />
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="you@email.com"
+            value={formData.email}
+            onChangeText={setFormData}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <Text style={styles.label}>Phone</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="9863330576"
+            value={formData.phone}
+            onChangeText={setFormData}
+            keyboardType="phone-pad"
+          />
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Create password"
+            value={formData.password}
+            onChangeText={setFormData}
+            secureTextEntry
+          />
+          <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={loading}>
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.registerButtonText}>Register</Text>}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.loginLink}>Already have an account? Login</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 30,
-  },
-  form: {
-    width: '100%',
-  },
+  safeArea: { flex: 1, backgroundColor: '#fff' },
+  container: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 40, paddingBottom: 40, justifyContent: 'center' },
+  title: { fontSize: 32, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 8 },
+  subtitle: { fontSize: 16, color: '#666', marginBottom: 30 },
+  form: { width: '100%' },
+  label: { fontSize: 13, fontWeight: '600', color: '#333', marginBottom: 6 },
   input: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#ddd',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 14,
     fontSize: 16,
     marginBottom: 16,
+    backgroundColor: '#fafafa',
   },
   registerButton: {
-    backgroundColor: '#E63946',
+    backgroundColor: '#4CAF50',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 999,
     alignItems: 'center',
     marginTop: 8,
   },
-  registerButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  registerButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   loginLink: {
-    color: '#E63946',
-    fontSize: 16,
+    color: '#4CAF50',
+    fontSize: 15,
+    fontWeight: '600',
     textAlign: 'center',
     marginTop: 20,
   },
 });
-
-export default RegisterScreen;

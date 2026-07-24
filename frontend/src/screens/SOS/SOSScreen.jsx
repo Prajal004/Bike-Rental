@@ -1,298 +1,143 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  ScrollView,
+  View, Text, TouchableOpacity, StyleSheet,
+  ScrollView, Alert
 } from 'react-native';
-import * as Location from 'expo-location';
-import Input from '../../components/common/Input';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, FONTS } from '../../styles/theme';
 import Button from '../../components/common/Button';
-import Loader from '../../components/common/Loader';
-import sosAPI from '../../api/sos.api';
 
-const SOSScreen = () => {
-  const [loading, setLoading] = useState(false);
-  const [activeSOS, setActiveSOS] = useState(null);
-  const [location, setLocation] = useState(null);
-  const [contacts, setContacts] = useState([
-    { name: '', phone: '', relation: '' },
-  ]);
+export default function SOSScreen({ navigation }) {
+  const [active, setActive] = useState(false);
 
-  useEffect(() => {
-    getLocation();
-    checkActiveSOS();
-  }, []);
-
-  const getLocation = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'Location access is required for SOS');
-      return;
-    }
-    const loc = await Location.getCurrentPositionAsync({});
-    setLocation(loc.coords);
-  };
-
-  const checkActiveSOS = async () => {
-    try {
-      const response = await sosAPI.getActive();
-      if (response.hasActiveSOS) {
-        setActiveSOS(response.sos);
-      }
-    } catch (error) {
-      console.error('Error checking SOS:', error);
-    }
-  };
-
-  const handleTriggerSOS = async () => {
-    if (!location) {
-      Alert.alert('Error', 'Unable to get location');
-      return;
-    }
-
+  const handleSOS = () => {
     Alert.alert(
-      'Emergency SOS',
-      'Are you in danger? This will alert your emergency contacts.',
+      '🚨 Emergency SOS',
+      'Are you sure? This will alert your emergency contacts.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'TRIGGER SOS',
           style: 'destructive',
-          onPress: triggerSOS,
-        },
+          onPress: () => {
+            setActive(true);
+            Alert.alert('✅ SOS Triggered', 'Help is on the way!');
+          }
+        }
       ]
     );
   };
 
-  const triggerSOS = async () => {
-    setLoading(true);
-    try {
-      const response = await sosAPI.trigger({
-        lat: location.latitude,
-        lng: location.longitude,
-        address: 'Current Location',
-      });
-      if (response.success) {
-        Alert.alert('SOS Triggered!', 'Emergency contacts notified.');
-        setActiveSOS(response.sosId);
-      }
-    } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to trigger SOS');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCancelSOS = async () => {
+  const handleCancelSOS = () => {
     Alert.alert(
       'Cancel SOS',
-      'Are you sure you want to cancel the alert?',
+      'Are you sure you want to cancel?',
       [
         { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes, Cancel',
-          style: 'destructive',
-          onPress: async () => {
-            setLoading(true);
-            try {
-              await sosAPI.cancel(activeSOS);
-              setActiveSOS(null);
-              Alert.alert('SOS Cancelled');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to cancel SOS');
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
+        { text: 'Yes, Cancel', onPress: () => setActive(false) }
       ]
     );
   };
 
-  if (loading) return <Loader />;
-
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Emergency SOS</Text>
-
-      {activeSOS ? (
-        <View style={styles.activeContainer}>
-          <Text style={styles.activeText}>🚨 SOS ACTIVE</Text>
-          <Text style={styles.activeSubtext}>Help is on the way!</Text>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={handleCancelSOS}
-          >
-            <Text style={styles.cancelButtonText}>Cancel SOS</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <TouchableOpacity
-          style={styles.sosButton}
-          onPress={handleTriggerSOS}
-        >
-          <Text style={styles.sosButtonText}>🆘 TRIGGER SOS</Text>
-          <Text style={styles.sosSubtext}>Emergency Alert</Text>
-        </TouchableOpacity>
-      )}
-
-      <View style={styles.contactsSection}>
-        <Text style={styles.sectionTitle}>Emergency Contacts</Text>
-        <Text style={styles.sectionSubtitle}>
-          These contacts will be notified in case of emergency
-        </Text>
-
-        {contacts.map((contact, index) => (
-          <View key={index} style={styles.contactCard}>
-            <Input
-              label="Name"
-              value={contact.name}
-              onChangeText={(text) => {
-                const newContacts = [...contacts];
-                newContacts[index].name = text;
-                setContacts(newContacts);
-              }}
-              placeholder="Contact name"
-            />
-            <Input
-              label="Phone"
-              value={contact.phone}
-              onChangeText={(text) => {
-                const newContacts = [...contacts];
-                newContacts[index].phone = text;
-                setContacts(newContacts);
-              }}
-              placeholder="Phone number"
-              keyboardType="phone-pad"
-            />
-            <Input
-              label="Relation"
-              value={contact.relation}
-              onChangeText={(text) => {
-                const newContacts = [...contacts];
-                newContacts[index].relation = text;
-                setContacts(newContacts);
-              }}
-              placeholder="e.g., Brother"
-            />
-          </View>
-        ))}
-
-        <Button
-          title="Add Contact"
-          variant="secondary"
-          onPress={() => setContacts([...contacts, { name: '', phone: '', relation: '' }])}
-        />
-
-        <Button
-          title="Save Contacts"
-          onPress={() => Alert.alert('Success', 'Contacts saved!')}
-        />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Emergency SOS</Text>
       </View>
 
-      <TouchableOpacity style={styles.policeButton}>
-        <Text style={styles.policeButtonText}>📞 Call Police (100)</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      <ScrollView contentContainerStyle={styles.content}>
+        {active ? (
+          <View style={styles.activeContainer}>
+            <Text style={styles.activeIcon}>🚨</Text>
+            <Text style={styles.activeTitle}>SOS ACTIVE</Text>
+            <Text style={styles.activeSubtext}>Help is on the way!</Text>
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancelSOS}>
+              <Text style={styles.cancelText}>Cancel SOS</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.sosButton} onPress={handleSOS}>
+            <Text style={styles.sosIcon}>🆘</Text>
+            <Text style={styles.sosText}>TRIGGER SOS</Text>
+            <Text style={styles.sosSubtext}>Emergency Alert</Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Emergency Contacts</Text>
+          <Text style={styles.infoText}>
+            Your emergency contacts will be notified when you trigger SOS.
+          </Text>
+          <TouchableOpacity style={styles.addContactButton}>
+            <Text style={styles.addContactText}>+ Add Emergency Contacts</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.policeButton}>
+          <Text style={styles.policeText}>📞 Call Police (100)</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginTop: 20,
-    marginBottom: 20,
-  },
+  container: { flex: 1, backgroundColor: COLORS.stone },
+  header: { padding: 20, paddingTop: 44, backgroundColor: COLORS.pine },
+  title: { fontSize: 24, fontWeight: '700', color: '#fff' },
+  content: { padding: 16, flexGrow: 1 },
   sosButton: {
     backgroundColor: '#E63946',
+    borderRadius: 20,
     padding: 40,
-    borderRadius: 16,
     alignItems: 'center',
     marginVertical: 20,
   },
-  sosButtonText: {
-    color: '#fff',
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-  sosSubtext: {
-    color: '#fff',
-    fontSize: 16,
-    marginTop: 8,
-  },
+  sosIcon: { fontSize: 60, marginBottom: 12 },
+  sosText: { fontSize: 28, fontWeight: '700', color: '#fff' },
+  sosSubtext: { fontSize: 16, color: '#fff', opacity: 0.8, marginTop: 4 },
   activeContainer: {
     backgroundColor: '#E63946',
-    padding: 30,
-    borderRadius: 16,
+    borderRadius: 20,
+    padding: 40,
     alignItems: 'center',
     marginVertical: 20,
   },
-  activeText: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  activeSubtext: {
-    color: '#fff',
-    fontSize: 16,
-    marginTop: 8,
-  },
+  activeIcon: { fontSize: 60, marginBottom: 12 },
+  activeTitle: { fontSize: 28, fontWeight: '700', color: '#fff' },
+  activeSubtext: { fontSize: 16, color: '#fff', opacity: 0.8, marginTop: 4 },
   cancelButton: {
     backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 999,
     marginTop: 16,
   },
-  cancelButtonText: {
-    color: '#E63946',
-    fontWeight: 'bold',
-    fontSize: 16,
+  cancelText: { color: '#E63946', fontSize: 16, fontWeight: '700' },
+  infoCard: {
+    backgroundColor: COLORS.paper,
+    borderRadius: 16,
+    padding: 16,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: COLORS.line,
   },
-  contactsSection: {
-    backgroundColor: '#fff',
+  infoTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink, marginBottom: 8 },
+  infoText: { fontSize: 13, color: COLORS.inkSoft, lineHeight: 20 },
+  addContactButton: {
+    backgroundColor: COLORS.pine,
+    padding: 12,
+    borderRadius: 999,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  addContactText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  policeButton: {
+    backgroundColor: '#2196F3',
     padding: 16,
     borderRadius: 12,
-    marginVertical: 10,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 4,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 16,
-  },
-  contactCard: {
-    backgroundColor: '#f8f8f8',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  policeButton: {
-    backgroundColor: '#457B9D',
-    padding: 16,
-    borderRadius: 8,
     alignItems: 'center',
-    marginVertical: 10,
+    marginTop: 12,
   },
-  policeButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  policeText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
-
-export default SOSScreen;

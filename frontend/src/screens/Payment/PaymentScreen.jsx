@@ -1,195 +1,197 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  ScrollView,
+  View, Text, TouchableOpacity, ScrollView,
+  StyleSheet, Alert
 } from 'react-native';
+import { COLORS, FONTS } from '../../styles/theme';
 import Button from '../../components/common/Button';
-import paymentAPI from '../../api/payment.api';
+import TicketCard from '../../components/common/TicketCard';
+import { ADDONS } from '../../constants/addons';
 
-const PaymentScreen = ({ route, navigation }) => {
-  const { rentalId, total } = route.params || {};
-  const [selectedMethod, setSelectedMethod] = useState('esewa');
-  const [loading, setLoading] = useState(false);
+const DELIVERY_FEE = 20;
 
-  const paymentMethods = [
-    { id: 'esewa', name: 'eSewa Wallet', icon: '💰' },
-    { id: 'khalti', name: 'Khalti Wallet', icon: '💳' },
-    { id: 'fonepay', name: 'Fonepay QR', icon: '📱' },
-    { id: 'cash', name: 'Cash on Pickup', icon: '💵' },
-  ];
+const METHODS = [
+  { id: 'cash', name: 'Cash', icon: '💵', ready: true },
+  { id: 'bank', name: 'Bank Transfer', icon: '🏦', ready: true },
+  { id: 'esewa', name: 'eSewa', icon: '📲', ready: false },
+  { id: 'khalti', name: 'Khalti', icon: '💳', ready: false },
+  { id: 'fonepay', name: 'Fonepay', icon: '📱', ready: false },
+];
 
-  const handlePayment = async () => {
-    setLoading(true);
-    try {
-      let response;
-      switch (selectedMethod) {
-        case 'esewa':
-          response = await paymentAPI.initiateEsewa(rentalId);
-          break;
-        case 'khalti':
-          response = await paymentAPI.initiateKhalti(rentalId);
-          break;
-        case 'fonepay':
-          response = await paymentAPI.initiateFonepay(rentalId);
-          break;
-        case 'cash':
-          response = { success: true, message: 'Pay at pickup' };
-          break;
-        default:
-          throw new Error('Invalid payment method');
-      }
+export default function PaymentScreen({ navigation, route }) {
+  const { bike, addons = [], totalPrice, pickup, dropoff } = route.params || {};
+  const [method, setMethod] = useState('cash');
 
-      if (response.success) {
-        Alert.alert('Success', 'Payment initiated!', [
-          { text: 'OK', onPress: () => navigation.navigate('Confirmation', { rentalId }) }
-        ]);
-      }
-    } catch (error) {
-      Alert.alert('Error', error.message || 'Payment failed');
-    } finally {
-      setLoading(false);
+  const rentalFee = bike?.price || 0;
+  const addonsTotal = useMemo(
+    () => addons.reduce((sum, id) => sum + (ADDONS.find(a => a.id === id)?.price || 0), 0),
+    [addons]
+  );
+  const grandTotal = rentalFee + addonsTotal + DELIVERY_FEE;
+
+  const selectedMethod = METHODS.find((m) => m.id === method);
+
+  const handlePayNow = () => {
+    if (!selectedMethod.ready) {
+      Alert.alert(
+        `${selectedMethod.name} — Coming Soon`,
+        `${selectedMethod.name} integration isn't wired up yet. Use Cash or Bank Transfer.`
+      );
+      return;
     }
+    navigation.navigate('OrderConfirmation', { bike, pickup, dropoff, grandTotal, method });
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Payment</Text>
-
-      <View style={styles.amountContainer}>
-        <Text style={styles.amountLabel}>Total Amount</Text>
-        <Text style={styles.amount}>Rs {total || 0}</Text>
+    <View style={styles.container}>
+      <View style={styles.topbar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.topbarTitle}>Payment</Text>
       </View>
 
-      <View style={styles.methodsContainer}>
-        <Text style={styles.sectionTitle}>Select Payment Method</Text>
-        {paymentMethods.map((method) => (
-          <TouchableOpacity
-            key={method.id}
-            style={[
-              styles.methodCard,
-              selectedMethod === method.id && styles.selectedMethod,
-            ]}
-            onPress={() => setSelectedMethod(method.id)}
-          >
-            <Text style={styles.methodIcon}>{method.icon}</Text>
-            <View style={styles.methodInfo}>
-              <Text style={styles.methodName}>{method.name}</Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        <TicketCard
+          top={
+            <View>
+              <View style={styles.row}>
+                <Text style={styles.l}>{bike?.name || 'Honda Beat'} rental</Text>
+                <Text style={styles.r}>Rs {rentalFee}</Text>
+              </View>
+              {addons.map((id) => {
+                const a = ADDONS.find((x) => x.id === id);
+                if (!a) return null;
+                return (
+                  <View key={id} style={styles.row}>
+                    <Text style={styles.l}>{a.icon} {a.name}</Text>
+                    <Text style={styles.r}>{a.price === 0 ? 'Free' : `Rs ${a.price}`}</Text>
+                  </View>
+                );
+              })}
+              <View style={styles.row}>
+                <Text style={styles.l}>Delivery Fee</Text>
+                <Text style={styles.r}>Rs {DELIVERY_FEE}</Text>
+              </View>
             </View>
-            <View style={styles.radioButton}>
-              {selectedMethod === method.id && <View style={styles.radioSelected} />}
+          }
+          bottom={
+            <View style={styles.rowTotal}>
+              <Text style={styles.totalL}>Total payment</Text>
+              <Text style={styles.totalR}>Rs {grandTotal}</Text>
             </View>
-          </TouchableOpacity>
-        ))}
+          }
+        />
+
+        <Text style={styles.sectionLabel}>SELECT PAYMENT METHOD</Text>
+        {METHODS.map((m) => {
+          const selected = method === m.id;
+          return (
+            <TouchableOpacity
+              key={m.id}
+              style={[styles.method, selected && styles.methodSelected]}
+              onPress={() => setMethod(m.id)}
+            >
+              <View style={styles.methodLeft}>
+                <View style={styles.badge}><Text>{m.icon}</Text></View>
+                <Text style={styles.methodName}>{m.name}</Text>
+                {!m.ready && <Text style={styles.soon}>Soon</Text>}
+              </View>
+              <View style={[styles.radio, selected && styles.radioOn]} />
+            </TouchableOpacity>
+          );
+        })}
+
+        {method === 'bank' && (
+          <View style={styles.bankCard}>
+            <Text style={styles.bankLabel}>Transfer to</Text>
+            <Text style={styles.bankValue}>Prajal Rentals — Nabil Bank</Text>
+            <Text style={styles.bankValue}>Acc No: 01234567890123</Text>
+            <Text style={styles.bankHint}>
+              Upload proof of transfer after payment. Waiting for confirmation status appears in Order Detail.
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={styles.stickyBottom}>
+        <Button label="Pay Now" variant="brick" onPress={handlePayNow} />
       </View>
-
-      <Button
-        title="Pay Now"
-        onPress={handlePayment}
-        loading={loading}
-        style={styles.button}
-      />
-
-      <Text style={styles.secureText}>
-        🔒 Your money is safe and secure
-      </Text>
-    </ScrollView>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginTop: 20,
-    marginBottom: 16,
-  },
-  amountContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  amountLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  amount: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#E63946',
-    marginTop: 4,
-  },
-  methodsContainer: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 12,
-  },
-  methodCard: {
+  container: { flex: 1, backgroundColor: COLORS.stone },
+  topbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#eee',
-    marginBottom: 8,
+    gap: 12,
+    backgroundColor: COLORS.pine,
+    paddingHorizontal: 18,
+    paddingTop: 50,
+    paddingBottom: 14,
   },
-  selectedMethod: {
-    borderColor: '#E63946',
-    backgroundColor: '#fff5f5',
+  back: { fontSize: 20, color: '#fff' },
+  topbarTitle: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  content: { padding: 20, paddingBottom: 20 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  l: { fontSize: 13, color: COLORS.inkSoft },
+  r: { fontSize: 13, fontWeight: '600', color: COLORS.ink },
+  rowTotal: { flexDirection: 'row', justifyContent: 'space-between' },
+  totalL: { fontSize: 17, fontWeight: '700', color: COLORS.ink },
+  totalR: { fontSize: 17, fontWeight: '700', color: COLORS.ink },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.inkSoft,
+    letterSpacing: 0.5,
+    marginTop: 22,
+    marginBottom: 10,
   },
-  methodIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  methodInfo: {
-    flex: 1,
-  },
-  methodName: {
-    fontSize: 16,
-    color: '#1a1a1a',
-  },
-  radioButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    justifyContent: 'center',
+  method: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: COLORS.line,
+    borderRadius: 14,
+    marginBottom: 10,
+    backgroundColor: COLORS.paper,
   },
-  radioSelected: {
-    width: 12,
-    height: 12,
+  methodSelected: { borderColor: COLORS.pine, backgroundColor: '#EEF3EC' },
+  methodLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  badge: {
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+    backgroundColor: COLORS.stone,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  methodName: { fontSize: 13.5, fontWeight: '600', color: COLORS.ink },
+  soon: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: COLORS.brick,
+    backgroundColor: '#F7E7CE',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 6,
-    backgroundColor: '#E63946',
   },
-  button: {
-    marginBottom: 12,
+  radio: { width: 17, height: 17, borderRadius: 9, borderWidth: 2, borderColor: COLORS.line },
+  radioOn: { borderColor: COLORS.pine, backgroundColor: COLORS.pine },
+  bankCard: {
+    backgroundColor: COLORS.paper,
+    borderRadius: 14,
+    padding: 16,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: COLORS.line,
   },
-  secureText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 14,
-    marginBottom: 20,
-  },
+  bankLabel: { fontSize: 10.5, fontWeight: '600', color: COLORS.inkSoft, marginBottom: 4 },
+  bankValue: { fontSize: 13.5, fontWeight: '700', color: COLORS.ink, marginBottom: 2 },
+  bankHint: { fontSize: 11.5, color: COLORS.inkSoft, marginTop: 8, lineHeight: 16 },
+  stickyBottom: { padding: 18, backgroundColor: COLORS.paper, borderTopWidth: 1, borderTopColor: COLORS.line },
 });
-
-export default PaymentScreen;

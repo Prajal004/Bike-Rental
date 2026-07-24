@@ -14,8 +14,8 @@ import { COLORS } from '../../styles/colors';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
-  const [email, setEmail] = useState('prajal@example.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState(''); 
+  const [password, setPassword] = useState('');  
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -41,16 +41,14 @@ export default function LoginScreen({ navigation }) {
         resizeMode="cover"
       >
         <View style={styles.overlay}>
-          {/* Brand */}
           <View style={styles.brandContainer}>
             <Text style={styles.brandIcon}>🏍️</Text>
             <Text style={styles.brandText}>prajal</Text>
-            <Text style={styles.brandTag}>Ride the valley</Text>
+            <Text style={styles.brandTag}>RIDE THE VALLEY</Text>
           </View>
 
           <Text style={styles.subtitle}>Enter your email and password to continue</Text>
 
-          {/* Form */}
           <View style={styles.form}>
             <Text style={styles.label}>Email</Text>
             <TextInput
@@ -95,7 +93,7 @@ export default function LoginScreen({ navigation }) {
             <Text style={styles.orText}>— OR —</Text>
 
             <TouchableOpacity style={styles.socialButton}>
-              <Text style={styles.socialText}>🔵 Google email</Text>
+              <Text style={styles.socialText}>�� Google email</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={[styles.socialButton, styles.facebookButton]}>
@@ -136,7 +134,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   brandText: {
-    fontFamily: 'Fraunces_700Bold',
     fontSize: 30,
     fontWeight: '700',
     color: COLORS.white,
@@ -201,7 +198,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   loginButton: {
-    backgroundColor: COLORS.brick,
+    backgroundColor: '#9C4A2E',
     borderRadius: 999,
     padding: 15,
     alignItems: 'center',

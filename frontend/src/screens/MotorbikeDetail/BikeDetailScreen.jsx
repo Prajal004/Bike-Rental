@@ -1,211 +1,137 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
+  View, Text, ScrollView, TouchableOpacity,
+  StyleSheet, Dimensions
 } from 'react-native';
-import motorbikeAPI from '../../api/motorbike.api';
+import { COLORS, FONTS } from '../../styles/theme';
 import Button from '../../components/common/Button';
+import BikeIcon from '../../components/motorbike/BikeIcon';
+import { ADDONS } from '../../constants/addons';
 
-const BikeDetailScreen = ({ route, navigation }) => {
-  const { id } = route.params || {};
-  const [bike, setBike] = useState(null);
-  const [loading, setLoading] = useState(true);
+const { width } = Dimensions.get('window');
 
-  useEffect(() => {
-    if (id) fetchBike();
-  }, [id]);
+export default function BikeDetailScreen({ navigation, route }) {
+  const bike = route.params?.bike || { name: 'Honda Beat', price: 280, rating: 4.6 };
+  const [selectedAddons, setSelectedAddons] = useState(['helmet']);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
-  const fetchBike = async () => {
-    try {
-      const response = await motorbikeAPI.getById(id);
-      if (response.success) {
-        setBike(response.motorcycle);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load bike details');
-    } finally {
-      setLoading(false);
-    }
+  const addonsTotal = useMemo(
+    () => selectedAddons.reduce((sum, id) => sum + (ADDONS.find(a => a.id === id)?.price || 0), 0),
+    [selectedAddons]
+  );
+  const totalPrice = bike.price + addonsTotal;
+
+  const toggleAddon = (id) => {
+    setSelectedAddons(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
-
-  const handleRent = () => {
-    navigation.navigate('OrderSummary', { bikeId: id, bike });
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#E63946" />
-      </View>
-    );
-  }
-
-  if (!bike) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Bike not found</Text>
-      </View>
-    );
-  }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Text style={styles.imagePlaceholder}>🏍️</Text>
+    <View style={styles.container}>
+      <View style={styles.topbar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.back}>←</Text></TouchableOpacity>
+        <Text style={styles.topbarTitle}>Detail</Text>
       </View>
 
-      <View style={styles.content}>
-        <Text style={styles.name}>{bike.name}</Text>
-        <Text style={styles.brand}>{bike.brand} • {bike.year}</Text>
-        <Text style={styles.cc}>{bike.cc} cc</Text>
-
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>Rs {bike.pricePerDay}</Text>
-          <Text style={styles.priceLabel}>/ day</Text>
+      <ScrollView>
+        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+          onScroll={(e) => setGalleryIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
+          scrollEventThrottle={16}>
+          {[0, 1, 2].map((i) => (
+            <View key={i} style={[styles.galleryPage, { width }]}>
+              <BikeIcon color={bike.color || '#3E7360'} size={200} />
+            </View>
+          ))}
+        </ScrollView>
+        <View style={styles.dots}>
+          {[0, 1, 2].map((i) => <View key={i} style={[styles.dot, galleryIndex === i && styles.dotOn]} />)}
         </View>
 
-        {bike.description && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.description}>{bike.description}</Text>
+        <View style={styles.body}>
+          <View style={styles.titleRow}>
+            <Text style={styles.name}>{bike.name} 2018</Text>
+            <View style={styles.availPill}><Text style={styles.availText}>● Available today</Text></View>
           </View>
-        )}
+          <Text style={styles.ratingRow}>★ {bike.rating} · 150 reviews · Rental prajal</Text>
 
-        {bike.specifications && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Specifications</Text>
-            <View style={styles.specGrid}>
-              <View style={styles.specItem}>
-                <Text style={styles.specLabel}>Engine</Text>
-                <Text style={styles.specValue}>{bike.specifications.engine || 'N/A'}</Text>
+          <Text style={styles.sectionLabel}>SPECIFICATIONS</Text>
+          <View style={styles.specGrid}>
+            {[['110cc', 'Engine'], ['2018', 'Year'], ['Auto', 'Transmission'], ['Petrol', 'Fuel']].map(([v, l]) => (
+              <View key={l} style={styles.specItem}>
+                <Text style={styles.specValue}>{v}</Text>
+                <Text style={styles.specLabel}>{l}</Text>
               </View>
-              <View style={styles.specItem}>
-                <Text style={styles.specLabel}>Mileage</Text>
-                <Text style={styles.specValue}>{bike.specifications.mileage || 'N/A'}</Text>
-              </View>
-              <View style={styles.specItem}>
-                <Text style={styles.specLabel}>Fuel</Text>
-                <Text style={styles.specValue}>{bike.specifications.fuelType || 'Petrol'}</Text>
-              </View>
-              <View style={styles.specItem}>
-                <Text style={styles.specLabel}>Transmission</Text>
-                <Text style={styles.specValue}>{bike.specifications.transmission || 'Manual'}</Text>
-              </View>
-            </View>
+            ))}
           </View>
-        )}
 
-        <Button title="Rent Now" onPress={handleRent} style={styles.rentButton} />
+          <Text style={styles.sectionLabel}>ADD-ONS</Text>
+          {ADDONS.map((addon) => {
+            const selected = selectedAddons.includes(addon.id);
+            return (
+              <TouchableOpacity key={addon.id} style={[styles.addonRow, selected && styles.addonSelected]} onPress={() => toggleAddon(addon.id)}>
+                <View style={styles.addonLeft}>
+                  <Text style={styles.addonIcon}>{addon.icon}</Text>
+                  <Text style={styles.addonName}>{addon.name}</Text>
+                </View>
+                <View style={styles.addonRight}>
+                  <Text style={styles.addonPrice}>{addon.price === 0 ? 'Free' : `+Rs ${addon.price}`}</Text>
+                  <View style={[styles.checkbox, selected && styles.checkboxOn]}>
+                    {selected && <Text style={styles.checkMark}>✓</Text>}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+
+          <Text style={styles.prepared}>Prepared by <Text style={{ fontWeight: 'bold', color: COLORS.ink }}>Sewa Motor</Text></Text>
+          <TouchableOpacity><Text style={styles.link}>See reviews ›</Text></TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      <View style={styles.stickyBottom}>
+        <View>
+          <Text style={styles.priceBig}>Rs {totalPrice}<Text style={styles.priceSuffix}> total price</Text></Text>
+          {addonsTotal > 0 && <Text style={styles.priceBreakdown}>Rs {bike.price} + Rs {addonsTotal} add-ons</Text>}
+        </View>
+        <Button label="Order now" variant="brick" onPress={() => navigation.navigate('LocationSelect', { bike, addons: selectedAddons, totalPrice })} />
       </View>
-    </ScrollView>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    fontSize: 18,
-    color: '#666',
-  },
-  imageContainer: {
-    height: 250,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imagePlaceholder: {
-    fontSize: 80,
-  },
-  content: {
-    padding: 20,
-  },
-  name: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
-  brand: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 4,
-  },
-  cc: {
-    fontSize: 14,
-    color: '#999',
-    marginTop: 2,
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginVertical: 16,
-  },
-  price: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#E63946',
-  },
-  priceLabel: {
-    fontSize: 16,
-    color: '#666',
-    marginLeft: 4,
-  },
-  section: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    color: '#444',
-    lineHeight: 24,
-  },
-  specGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-  },
-  specItem: {
-    width: '50%',
-    paddingVertical: 8,
-  },
-  specLabel: {
-    fontSize: 12,
-    color: '#999',
-  },
-  specValue: {
-    fontSize: 14,
-    color: '#1a1a1a',
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  rentButton: {
-    marginTop: 20,
-  },
+  container: { flex: 1, backgroundColor: COLORS.stone },
+  topbar: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: COLORS.pine, paddingHorizontal: 18, paddingTop: 50, paddingBottom: 14 },
+  back: { fontSize: 20, color: '#fff' },
+  topbarTitle: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  galleryPage: { height: 220, backgroundColor: '#EFE9DB', alignItems: 'center', justifyContent: 'center' },
+  dots: { flexDirection: 'row', justifyContent: 'center', gap: 5, marginTop: -18, marginBottom: 8 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#c9c2ae' },
+  dotOn: { backgroundColor: COLORS.pine },
+  body: { padding: 20 },
+  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  name: { fontSize: 21, fontWeight: '700', color: COLORS.ink },
+  availPill: { backgroundColor: '#DFEADD', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  availText: { fontSize: 10, fontWeight: '600', color: COLORS.pine },
+  ratingRow: { fontSize: 12, color: COLORS.inkSoft, marginTop: 4, marginBottom: 18 },
+  sectionLabel: { fontSize: 11, fontWeight: '600', color: COLORS.inkSoft, letterSpacing: 0.5, marginBottom: 10 },
+  specGrid: { flexDirection: 'row', gap: 8, marginBottom: 20 },
+  specItem: { flex: 1, backgroundColor: COLORS.stone, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
+  specValue: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
+  specLabel: { fontSize: 9.5, color: COLORS.inkSoft, marginTop: 2 },
+  addonRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 13, borderWidth: 1.5, borderColor: COLORS.line, borderRadius: 12, marginBottom: 8, backgroundColor: COLORS.paper },
+  addonSelected: { borderColor: COLORS.pine, backgroundColor: '#EEF3EC' },
+  addonLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  addonIcon: { fontSize: 17 },
+  addonName: { fontSize: 13.5, fontWeight: '600', color: COLORS.ink },
+  addonRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  addonPrice: { fontSize: 12, color: COLORS.inkSoft },
+  checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: COLORS.line, alignItems: 'center', justifyContent: 'center' },
+  checkboxOn: { backgroundColor: COLORS.pine, borderColor: COLORS.pine },
+  checkMark: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
+  prepared: { fontSize: 12, color: COLORS.inkSoft, marginTop: 14, marginBottom: 12 },
+  link: { fontSize: 13, fontWeight: '700', color: COLORS.pine },
+  stickyBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, backgroundColor: COLORS.paper, borderTopWidth: 1, borderTopColor: COLORS.line },
+  priceBig: { fontSize: 19, fontWeight: '700', color: COLORS.ink },
+  priceSuffix: { fontSize: 10.5, color: COLORS.inkSoft },
+  priceBreakdown: { fontSize: 10.5, color: COLORS.inkSoft, marginTop: 2 },
 });
-
-export default BikeDetailScreen;

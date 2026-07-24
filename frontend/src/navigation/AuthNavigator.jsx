@@ -6,7 +6,7 @@ import OtpScreen from '../screens/OtpVerification/OtpScreen';
 
 const Stack = createStackNavigator();
 
-const AuthNavigator = () => {
+export default function AuthNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={LoginScreen} />
@@ -14,6 +14,4 @@ const AuthNavigator = () => {
       <Stack.Screen name="OtpVerification" component={OtpScreen} />
     </Stack.Navigator>
   );
-};
-
-export default AuthNavigator;
+}

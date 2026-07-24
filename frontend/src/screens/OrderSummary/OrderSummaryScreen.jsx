@@ -1,192 +1,99 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
+  View, Text, TouchableOpacity, StyleSheet,
+  ScrollView, Alert
 } from 'react-native';
+import { COLORS, FONTS } from '../../styles/theme';
 import Button from '../../components/common/Button';
-import LocationPicker from '../../components/booking/LocationPicker';
-import DurationPicker from '../../components/booking/DurationPicker';
-import rentalAPI from '../../api/rental.api';
+import { ADDONS } from '../../constants/addons';
 
-const OrderSummaryScreen = ({ route, navigation }) => {
-  const { bikeId, bike } = route.params || {};
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [pickupLocation, setPickupLocation] = useState(null);
-  const [returnLocation, setReturnLocation] = useState(null);
-  const [loading, setLoading] = useState(false);
+export default function OrderSummaryScreen({ navigation, route }) {
+  const { bike, addons = [], totalPrice } = route.params || {};
 
-  const calculateTotal = () => {
-    if (!startDate || !endDate) return 0;
-    const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-    return bike?.pricePerDay * days || 0;
-  };
-
-  const handleRent = async () => {
-    if (!startDate || !endDate) {
-      Alert.alert('Error', 'Please select dates');
-      return;
-    }
-    if (!pickupLocation) {
-      Alert.alert('Error', 'Please select pickup location');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await rentalAPI.create({
-        motorcycleId: bikeId,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        pickupLocation: pickupLocation.address || pickupLocation.name,
-        returnLocation: returnLocation?.address || returnLocation?.name || pickupLocation.address || pickupLocation.name,
-        paymentMethod: 'esewa',
-      });
-
-      if (response.success) {
-        navigation.navigate('Payment', {
-          rentalId: response.rental.rentalId,
-          total: calculateTotal(),
-        });
-      }
-    } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to create rental');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const addonsList = addons.map(id => ADDONS.find(a => a.id === id)).filter(Boolean);
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Order Summary</Text>
-
-      <View style={styles.bikeInfo}>
-        <Text style={styles.bikeName}>{bike?.name || 'Bike'}</Text>
-        <Text style={styles.bikePrice}>Rs {bike?.pricePerDay || 0}/day</Text>
+    <View style={styles.container}>
+      <View style={styles.topbar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.topbarTitle}>Order Summary</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Rental Duration</Text>
-        <DurationPicker
-          startDate={startDate}
-          endDate={endDate}
-          onSelect={(type, date) => {
-            if (type === 'start') setStartDate(date);
-            else setEndDate(date);
-          }}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Pickup Location</Text>
-        <LocationPicker
-          label="Pickup Location"
-          selectedLocation={pickupLocation}
-          onSelect={setPickupLocation}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Return Location</Text>
-        <LocationPicker
-          label="Return Location"
-          selectedLocation={returnLocation}
-          onSelect={setReturnLocation}
-        />
-      </View>
-
-      {startDate && endDate && (
-        <View style={styles.totalContainer}>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalPrice}>Rs {calculateTotal()}</Text>
-          <Text style={styles.totalDays}>
-            {Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))} days
-          </Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.card}>
+          <Text style={styles.bikeName}>{bike?.name || 'Honda Beat'}</Text>
+          <Text style={styles.bikePrice}>Rs {bike?.price || 280}/day</Text>
         </View>
-      )}
 
-      <Button
-        title="Proceed to Payment"
-        onPress={handleRent}
-        loading={loading}
-        style={styles.button}
-      />
-    </ScrollView>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Rental Duration</Text>
+          <Text style={styles.durationText}>25 Jun 2026, 09:00 → 26 Jun 2026, 09:00</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Add-ons</Text>
+          {addonsList.length > 0 ? (
+            addonsList.map((a) => (
+              <View key={a.id} style={styles.addonRow}>
+                <Text style={styles.addonName}>{a.icon} {a.name}</Text>
+                <Text style={styles.addonPrice}>{a.price === 0 ? 'Free' : `+Rs ${a.price}`}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noAddons}>No add-ons selected</Text>
+          )}
+        </View>
+
+        <View style={[styles.card, styles.totalCard]}>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalPrice}>Rs {totalPrice || 0}</Text>
+          </View>
+        </View>
+
+        <Button
+          label="Confirm Booking"
+          onPress={() => navigation.navigate('Payment', { bike, addons, totalPrice })}
+        />
+      </ScrollView>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginTop: 20,
-    marginBottom: 16,
-  },
-  bikeInfo: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+  container: { flex: 1, backgroundColor: COLORS.stone },
+  topbar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 12,
+    backgroundColor: COLORS.pine,
+    paddingHorizontal: 18,
+    paddingTop: 50,
+    paddingBottom: 14,
   },
-  bikeName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
-  bikePrice: {
-    fontSize: 16,
-    color: '#E63946',
-    fontWeight: 'bold',
-  },
-  section: {
-    backgroundColor: '#fff',
+  back: { fontSize: 20, color: '#fff' },
+  topbarTitle: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  content: { padding: 20 },
+  card: {
+    backgroundColor: COLORS.paper,
+    borderRadius: 18,
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: COLORS.line,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 12,
-  },
-  totalContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
-    marginVertical: 16,
-    alignItems: 'center',
-  },
-  totalLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  totalPrice: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#E63946',
-    marginVertical: 4,
-  },
-  totalDays: {
-    fontSize: 14,
-    color: '#666',
-  },
-  button: {
-    marginBottom: 20,
-  },
+  bikeName: { fontSize: 18, fontWeight: '700', color: COLORS.ink },
+  bikePrice: { fontSize: 16, fontWeight: '600', color: COLORS.brick, marginTop: 4 },
+  sectionTitle: { fontSize: 14, fontWeight: '600', color: COLORS.ink, marginBottom: 8 },
+  durationText: { fontSize: 13, color: COLORS.inkSoft },
+  addonRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: COLORS.line },
+  addonName: { fontSize: 13, color: COLORS.ink },
+  addonPrice: { fontSize: 13, fontWeight: '600', color: COLORS.ink },
+  noAddons: { fontSize: 13, color: COLORS.inkSoft, fontStyle: 'italic' },
+  totalCard: { backgroundColor: COLORS.pine, borderColor: COLORS.pine },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  totalLabel: { fontSize: 18, fontWeight: '700', color: '#fff' },
+  totalPrice: { fontSize: 18, fontWeight: '700', color: '#fff' },
 });
-
-export default OrderSummaryScreen;

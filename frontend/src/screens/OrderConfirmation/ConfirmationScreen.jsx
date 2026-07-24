@@ -1,209 +1,94 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
+  View, Text, TouchableOpacity, StyleSheet,
+  ScrollView
 } from 'react-native';
+import { COLORS, FONTS } from '../../styles/theme';
 import Button from '../../components/common/Button';
-import rentalAPI from '../../api/rental.api';
-import paymentAPI from '../../api/payment.api';
 
-const ConfirmationScreen = ({ route, navigation }) => {
-  const { rentalId } = route.params || {};
-  const [rental, setRental] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [invoice, setInvoice] = useState(null);
-
-  useEffect(() => {
-    if (rentalId) {
-      fetchRentalDetails();
-      fetchInvoice();
-    }
-  }, [rentalId]);
-
-  const fetchRentalDetails = async () => {
-    try {
-      const response = await rentalAPI.getById(rentalId);
-      if (response.success) {
-        setRental(response.rental);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load rental details');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchInvoice = async () => {
-    try {
-      const response = await paymentAPI.getInvoice(rentalId);
-      if (response.success) {
-        setInvoice(response.invoice);
-      }
-    } catch (error) {
-      console.error('Invoice error:', error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#E63946" />
-      </View>
-    );
-  }
+export default function ConfirmationScreen({ navigation, route }) {
+  const { bike, pickup, dropoff, grandTotal, method } = route.params || {};
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.successContainer}>
-        <Text style={styles.successIcon}>✅</Text>
-        <Text style={styles.successTitle}>Order Confirmed!</Text>
-        <Text style={styles.successSubtitle}>Your rental has been confirmed</Text>
+    <View style={styles.container}>
+      <View style={styles.topbar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.topbarTitle}>Order Confirmation</Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Order Details</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Order ID</Text>
-          <Text style={styles.value}>{rental?.rentalId || 'N/A'}</Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.successContainer}>
+          <Text style={styles.successIcon}>✅</Text>
+          <Text style={styles.successTitle}>Order Confirmed!</Text>
+          <Text style={styles.successSubtitle}>Your motorbike has been booked</Text>
         </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Status</Text>
-          <View style={[styles.statusBadge, { backgroundColor: '#2ECC71' }]}>
-            <Text style={styles.statusText}>CONFIRMED</Text>
-          </View>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Bike</Text>
-          <Text style={styles.value}>{rental?.motorcycle?.name || 'N/A'}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Duration</Text>
-          <Text style={styles.value}>{rental?.duration || 0} days</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Total</Text>
-          <Text style={[styles.value, styles.totalPrice]}>Rs {rental?.totalPrice || 0}</Text>
-        </View>
-      </View>
 
-      {invoice && (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Payment Details</Text>
+          <Text style={styles.cardTitle}>Booking Details</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Payment Method</Text>
-            <Text style={styles.value}>{invoice.paymentMethod || 'N/A'}</Text>
+            <Text style={styles.label}>Bike</Text>
+            <Text style={styles.value}>{bike?.name || 'Honda Beat'}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Transaction ID</Text>
-            <Text style={styles.value}>{invoice.transactionId || 'N/A'}</Text>
+            <Text style={styles.label}>Pickup</Text>
+            <Text style={styles.value}>{pickup || 'Satungal Station'}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Paid At</Text>
-            <Text style={styles.value}>
-              {invoice.paidAt ? new Date(invoice.paidAt).toLocaleString() : 'N/A'}
-            </Text>
+            <Text style={styles.label}>Return</Text>
+            <Text style={styles.value}>{dropoff || 'Satungal Station'}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Payment</Text>
+            <Text style={styles.value}>{method || 'Cash'}</Text>
+          </View>
+          <View style={[styles.row, styles.totalRow]}>
+            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalValue}>Rs {grandTotal || 0}</Text>
           </View>
         </View>
-      )}
 
-      <View style={styles.actions}>
         <Button
-          title="Track Order"
-          onPress={() => navigation.navigate('Orders')}
-          variant="secondary"
+          label="Go to Home"
+          onPress={() => navigation.navigate('Tabs')}
         />
-        <Button
-          title="Go Home"
-          onPress={() => navigation.navigate('Home')}
-        />
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  successContainer: {
-    alignItems: 'center',
-    paddingVertical: 30,
-  },
-  successIcon: {
-    fontSize: 60,
-  },
-  successTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginTop: 8,
-  },
-  successSubtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 4,
-  },
-  card: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 12,
-  },
-  row: {
+  container: { flex: 1, backgroundColor: COLORS.stone },
+  topbar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    gap: 12,
+    backgroundColor: COLORS.pine,
+    paddingHorizontal: 18,
+    paddingTop: 50,
+    paddingBottom: 14,
   },
-  label: {
-    fontSize: 14,
-    color: '#666',
+  back: { fontSize: 20, color: '#fff' },
+  topbarTitle: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  content: { padding: 20, flexGrow: 1 },
+  successContainer: { alignItems: 'center', marginVertical: 20 },
+  successIcon: { fontSize: 60 },
+  successTitle: { fontSize: 24, fontWeight: '700', color: COLORS.ink, marginTop: 8 },
+  successSubtitle: { fontSize: 14, color: COLORS.inkSoft, marginTop: 4 },
+  card: {
+    backgroundColor: COLORS.paper,
+    borderRadius: 18,
+    padding: 16,
+    marginVertical: 16,
+    borderWidth: 1,
+    borderColor: COLORS.line,
   },
-  value: {
-    fontSize: 14,
-    color: '#1a1a1a',
-    fontWeight: '500',
-  },
-  totalPrice: {
-    fontSize: 18,
-    color: '#E63946',
-    fontWeight: 'bold',
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  actions: {
-    marginTop: 10,
-    marginBottom: 30,
-    gap: 10,
-  },
+  cardTitle: { fontSize: 18, fontWeight: '700', color: COLORS.ink, marginBottom: 12 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: COLORS.line },
+  label: { fontSize: 14, color: COLORS.inkSoft },
+  value: { fontSize: 14, fontWeight: '600', color: COLORS.ink },
+  totalRow: { borderBottomWidth: 0, paddingTop: 8 },
+  totalLabel: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
+  totalValue: { fontSize: 16, fontWeight: '700', color: COLORS.brick },
 });
-
-export default ConfirmationScreen;
