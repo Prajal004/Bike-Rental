@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, Image, FlatList, TouchableOpacity,
+  View, Text, FlatList, TouchableOpacity,
   ScrollView, StyleSheet, ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -84,35 +84,23 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <FlatList
-          data={bikes}
-          renderItem={renderBike}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          scrollEnabled={false}
-          contentContainerStyle={styles.grid}
-        />
+        {bikes.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No bikes available</Text>
+            <Text style={styles.emptySubtext}>Check back later!</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={bikes}
+            renderItem={renderBike}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            scrollEnabled={false}
+            contentContainerStyle={styles.grid}
+          />
+        )}
       </ScrollView>
-
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="home" size={24} color="#4CAF50" />
-          <Text style={[styles.navLabel, styles.navLabelActive]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Orders')}>
-          <Ionicons name="list-outline" size={24} color="#999" />
-          <Text style={styles.navLabel}>Orders</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('SOS')}>
-          <Ionicons name="alert-circle-outline" size={24} color="#999" />
-          <Text style={styles.navLabel}>SOS</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
-          <Ionicons name="person-outline" size={24} color="#999" />
-          <Text style={styles.navLabel}>Profile</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -183,16 +171,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   arrowText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#E4DDCC',
-  },
-  navItem: { alignItems: 'center', paddingVertical: 4 },
-  navLabel: { fontSize: 10, color: '#999', marginTop: 2 },
-  navLabelActive: { color: '#4CAF50' },
+  emptyContainer: { padding: 40, alignItems: 'center' },
+  emptyText: { fontSize: 18, color: '#666' },
+  emptySubtext: { fontSize: 14, color: '#999', marginTop: 4 },
 });
