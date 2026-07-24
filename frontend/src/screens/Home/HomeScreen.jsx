@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,225 +10,282 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../../styles/colors';
 import motorbikeAPI from '../../api/motorbike.api';
 
+const MOCK_BIKES = [
+  { id: '1', name: 'Honda Beat', cc: '100cc', price: 280, rating: 4.5, dist: '0.4 km away' },
+  { id: '2', name: 'Honda Vario', cc: '125cc', price: 500, rating: 4.6, dist: '0.6 km away' },
+  { id: '3', name: 'Scoopy', cc: '100cc', price: 280, rating: 4.3, dist: '0.9 km away' },
+  { id: '4', name: 'Supra X 125', cc: '125cc', price: 300, rating: 4.4, dist: '1.1 km away' },
+];
+
 function StarRating({ rating }) {
-  const stars = [];
-  const fullStars = Math.round(rating || 0);
+  const full = Math.round(rating);
+  let stars = '';
   for (let i = 1; i <= 5; i++) {
-    stars.push(
-      <Text key={i} style={i <= fullStars ? styles.starFilled : styles.starEmpty}>★</Text>
-    );
+    stars += i <= full ? '★' : '☆';
   }
   return (
-    <View style={styles.ratingRow}>
-      {stars}
-      <Text style={styles.ratingText}>{rating || 0}</Text>
+    <View style={styles.starRow}>
+      <Text style={styles.starText}>{stars} {rating}</Text>
     </View>
+  );
+}
+
+function BikeCard({ bike, onPress }) {
+  return (
+    <TouchableOpacity style={styles.bikeCard} onPress={onPress}>
+      <View style={[styles.bikeThumb, { backgroundColor: `${COLORS.pine}14` }]}>
+        <Text style={styles.bikeEmoji}>🏍️</Text>
+      </View>
+      <View style={styles.bikeInfo}>
+        <Text style={styles.bikeName}>{bike.name}</Text>
+        <Text style={styles.bikeCc}>{bike.cc}</Text>
+        <Text style={styles.bikeDist}>📍 {bike.dist}</Text>
+        <View style={styles.bikeBottom}>
+          <View>
+            <Text style={styles.bikePrice}>Rs {bike.price} <Text style={styles.bikePerDay}>/day</Text></Text>
+            <StarRating rating={bike.rating} />
+          </View>
+          <View style={styles.goButton}>
+            <Text style={styles.goText}>›</Text>
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 }
 
 export default function HomeScreen({ navigation }) {
   const [station] = useState('Satungal Station');
-  const [bikes, setBikes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [bikes, setBikes] = useState(MOCK_BIKES);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchBikes();
   }, []);
 
   const fetchBikes = async () => {
+    setLoading(true);
     try {
       const response = await motorbikeAPI.getAll();
-      if (response.success) {
-        setBikes(response.motorcycles || []);
+      if (response.success && response.motorcycles.length > 0) {
+        setBikes(response.motorcycles.map(b => ({
+          id: b.id,
+          name: b.name,
+          cc: `${b.cc}cc`,
+          price: b.pricePerDay,
+          rating: b.rating || 4.5,
+          dist: '0.5 km away',
+        })));
       }
     } catch (error) {
       console.error('Error fetching bikes:', error);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchBikes();
-  };
-
-  const renderBike = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate('MotorbikeDetail', { bikeId: item.id })}
-    >
-      <Image 
-        source={item.images && item.images.length > 0 
-          ? { uri: `http://localhost:5001/uploads/${item.images[0]}` }
-          : require('../../../assets/images/bike.png')
-        } 
-        style={styles.cardImage} 
-        resizeMode="cover" 
-      />
-      <View style={styles.cardBody}>
-        <Text style={styles.cardName}>{item.name}</Text>
-        <Text style={styles.cardCc}>{item.cc}cc</Text>
-        <View style={styles.cardBottomRow}>
-          <View>
-            <Text style={styles.cardPrice}>Rs {item.pricePerDay}<Text style={styles.perDay}>/day</Text></Text>
-            <StarRating rating={item.rating || 4.5} />
-          </View>
-          <TouchableOpacity style={styles.arrowButton}>
-            <Ionicons name="chevron-forward" size={16} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Loading bikes...</Text>
+        <ActivityIndicator size="large" color={COLORS.pine} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.stationPicker}>
-          <Text style={styles.stationText}>{station}</Text>
-          <Ionicons name="chevron-down" size={14} color="#fff" style={{ marginLeft: 4 }} />
+          <Text style={styles.stationText}>{station} ⌄</Text>
         </TouchableOpacity>
         <TouchableOpacity>
-          <Ionicons name="notifications-outline" size={22} color="#fff" />
+          <Ionicons name="notifications-outline" size={22} color={COLORS.white} />
         </TouchableOpacity>
       </View>
 
-      {/* Content */}
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Banner */}
-        <Image
-          source={require('../../../assets/images/bike.png')}
-          style={styles.banner}
-          resizeMode="cover"
-        />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.banner}>
+          <Text style={styles.bannerText}>Enjoy prajal services and pay easily</Text>
+          <Text style={styles.bannerEmoji}>🏍️</Text>
+        </View>
 
-        <View style={styles.sectionHeader}>
+        <View style={styles.sectionHead}>
           <Text style={styles.sectionTitle}>Around you</Text>
           <TouchableOpacity>
             <Text style={styles.seeAll}>See All</Text>
           </TouchableOpacity>
         </View>
 
-        {bikes.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No bikes available</Text>
-            <Text style={styles.emptySubtext}>Check back later!</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={bikes}
-            renderItem={renderBike}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-            scrollEnabled={false}
-            contentContainerStyle={styles.grid}
-          />
-        )}
+        <View style={styles.bikeGrid}>
+          {bikes.map((bike) => (
+            <BikeCard
+              key={bike.id}
+              bike={bike}
+              onPress={() => navigation.navigate('BikeDetail', { bikeId: bike.id })}
+            />
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8f9fa' },
-  loadingContainer: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.stone,
   },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#666',
-  },
-  header: {
-    backgroundColor: '#4CAF50',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 40,
-    paddingBottom: 12,
-  },
-  stationPicker: { flexDirection: 'row', alignItems: 'center' },
-  stationText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  banner: { width: '100%', height: 140, backgroundColor: '#e8f5e9', marginTop: 12 },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#222' },
-  seeAll: { fontSize: 13, color: '#4CAF50' },
-  grid: { paddingHorizontal: 12 },
-  row: { justifyContent: 'space-between' },
-  card: {
-    width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
-    overflow: 'hidden',
-  },
-  cardImage: { width: '100%', height: 90, backgroundColor: '#f0f0f0' },
-  cardBody: { padding: 10 },
-  cardName: { fontSize: 14, fontWeight: 'bold', color: '#222' },
-  cardCc: { fontSize: 11, color: '#888', marginBottom: 6 },
-  cardBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  cardPrice: { fontSize: 13, fontWeight: 'bold', color: '#222' },
-  perDay: { fontSize: 10, fontWeight: 'normal', color: '#888' },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  starFilled: { fontSize: 10, color: '#FFB800', marginRight: 1 },
-  starEmpty: { fontSize: 10, color: '#DDD', marginRight: 1 },
-  ratingText: { fontSize: 10, color: '#888', marginLeft: 3 },
-  arrowButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 14,
-    width: 28,
-    height: 28,
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: COLORS.stone,
   },
-  emptyContainer: {
-    padding: 40,
+  header: {
+    backgroundColor: COLORS.pine,
+    paddingTop: 44,
+    paddingHorizontal: 18,
+    paddingBottom: 18,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  emptyText: {
-    fontSize: 18,
-    color: '#666',
+  stationPicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  emptySubtext: {
+  stationText: {
+    color: COLORS.white,
+    fontSize: 14.5,
+    fontWeight: '700',
+  },
+  banner: {
+    marginHorizontal: 16,
+    marginTop: 14,
+    height: 132,
+    borderRadius: 20,
+    backgroundColor: '#16342A',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    overflow: 'hidden',
+  },
+  bannerText: {
+    color: COLORS.white,
+    fontSize: 17,
+    fontWeight: '600',
+    maxWidth: '62%',
+    lineHeight: 23,
+  },
+  bannerEmoji: {
+    fontSize: 60,
+    opacity: 0.28,
+  },
+  sectionHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 22,
+    paddingBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.ink,
+  },
+  seeAll: {
+    fontSize: 12,
+    color: COLORS.brick,
+    fontWeight: '700',
+  },
+  bikeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    paddingBottom: 90,
+    gap: 12,
+  },
+  bikeCard: {
+    width: '47%',
+    backgroundColor: COLORS.paper,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+  },
+  bikeThumb: {
+    height: 86,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bikeEmoji: {
+    fontSize: 40,
+  },
+  bikeInfo: {
+    paddingHorizontal: 12,
+    paddingBottom: 13,
+    paddingTop: 11,
+  },
+  bikeName: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: COLORS.ink,
+  },
+  bikeCc: {
+    fontSize: 10,
+    color: COLORS.inkSoft,
+    marginBottom: 3,
+  },
+  bikeDist: {
+    fontSize: 9.5,
+    color: COLORS.pineSoft,
+    fontWeight: '600',
+    marginBottom: 7,
+  },
+  bikeBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  bikePrice: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.ink,
+  },
+  bikePerDay: {
+    fontSize: 9,
+    fontWeight: '500',
+    color: COLORS.inkSoft,
+  },
+  starRow: {
+    marginTop: 2,
+  },
+  starText: {
+    fontSize: 10,
+    color: COLORS.marigold,
+  },
+  goButton: {
+    width: 27,
+    height: 27,
+    borderRadius: 14,
+    backgroundColor: COLORS.pine,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  goText: {
+    color: COLORS.white,
     fontSize: 14,
-    color: '#999',
-    marginTop: 4,
+    fontWeight: 'bold',
   },
 });
