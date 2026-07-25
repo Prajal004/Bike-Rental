@@ -28,7 +28,8 @@ export default function OtpScreen({ route, navigation }) {
     setLoading(false);
 
     if (result.success) {
-      navigation.replace('Main');
+      // ✅ Replace 'Main' with 'MainStack'
+      navigation.replace('MainStack');
     } else {
       Alert.alert('Verification Failed', result.message || 'Invalid OTP');
     }
@@ -64,16 +65,8 @@ export default function OtpScreen({ route, navigation }) {
         autoFocus
       />
 
-      <TouchableOpacity
-        style={styles.verifyButton}
-        onPress={handleVerify}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.verifyButtonText}>Verify</Text>
-        )}
+      <TouchableOpacity style={styles.verifyButton} onPress={handleVerify} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.verifyButtonText}>Verify</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleResend}>
@@ -84,23 +77,9 @@ export default function OtpScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 30,
-  },
+  container: { flex: 1, backgroundColor: '#fff', padding: 20, justifyContent: 'center' },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 8 },
+  subtitle: { fontSize: 16, color: '#666', marginBottom: 30 },
   otpInput: {
     borderWidth: 1.5,
     borderColor: '#ddd',
@@ -112,22 +91,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafafa',
     marginBottom: 20,
   },
-  verifyButton: {
-    backgroundColor: '#4CAF50',
-    padding: 16,
-    borderRadius: 999,
-    alignItems: 'center',
-  },
-  verifyButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  resendText: {
-    color: '#4CAF50',
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 20,
-    fontWeight: '600',
-  },
+  verifyButton: { backgroundColor: '#4CAF50', padding: 16, borderRadius: 999, alignItems: 'center' },
+  verifyButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  resendText: { color: '#4CAF50', fontSize: 16, textAlign: 'center', marginTop: 20, fontWeight: '600' },
 });

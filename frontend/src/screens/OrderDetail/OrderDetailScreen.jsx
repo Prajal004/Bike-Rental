@@ -1,9 +1,6 @@
 import React from 'react';
-import {
-  View, Text, TouchableOpacity, StyleSheet,
-  ScrollView, Alert
-} from 'react-native';
-import { COLORS, FONTS } from '../../styles/theme';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { COLORS } from '../../styles/colors';
 import Button from '../../components/common/Button';
 
 export default function OrderDetailScreen({ navigation, route }) {
@@ -50,7 +47,7 @@ export default function OrderDetailScreen({ navigation, route }) {
             </View>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoIcon}>🗓️</Text>
+            <Text style={styles.infoIcon}>��️</Text>
             <View>
               <Text style={styles.infoLabel}>Rental Duration</Text>
               <Text style={styles.infoSub}>25 Jun 2026 → 26 Jun 2026</Text>
@@ -58,29 +55,20 @@ export default function OrderDetailScreen({ navigation, route }) {
           </View>
         </View>
 
-        <Button
-          label="Contact the Rental Office"
-          onPress={() => navigation.navigate('Chat')}
-          variant="secondary"
-          style={styles.button}
-        />
-        <Button
-          label="Cancel Order"
-          variant="danger"
-          onPress={() => Alert.alert('Cancel Order', 'Are you sure?')}
-        />
+        <Button title="Contact the Rental Office" onPress={() => navigation.navigate('Chat')} variant="secondary" />
+        <Button title="Cancel Order" variant="danger" onPress={() => Alert.alert('Cancel Order', 'Are you sure?')} />
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.stone },
+  container: { flex: 1, backgroundColor: '#F1ECE2' },
   topbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: COLORS.pine,
+    justifyContent: 'space-between',
+    backgroundColor: '#16342A',
     paddingHorizontal: 18,
     paddingTop: 50,
     paddingBottom: 14,
@@ -88,38 +76,14 @@ const styles = StyleSheet.create({
   back: { fontSize: 20, color: '#fff' },
   topbarTitle: { fontSize: 16, fontWeight: '600', color: '#fff' },
   content: { padding: 20 },
-  statusCard: {
-    backgroundColor: COLORS.paper,
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-  },
-  statusPill: {
-    backgroundColor: '#F7E7CE',
-    color: '#93611A',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 999,
-    fontSize: 10.5,
-    fontWeight: '700',
-    alignSelf: 'flex-start',
-  },
+  statusCard: { backgroundColor: '#FFFCF6', borderRadius: 18, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: '#E4DDCC' },
+  statusPill: { backgroundColor: '#F7E7CE', color: '#93611A', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, fontSize: 10.5, fontWeight: '700', alignSelf: 'flex-start' },
   orderItem: { marginTop: 14 },
-  bikeName: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
-  shopName: { fontSize: 13, color: COLORS.inkSoft, marginTop: 2 },
-  card: {
-    backgroundColor: COLORS.paper,
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: COLORS.line,
-  },
-  infoRow: { flexDirection: 'row', gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: COLORS.line },
+  bikeName: { fontSize: 16, fontWeight: '700', color: '#1B2A22' },
+  shopName: { fontSize: 13, color: '#6B7A70', marginTop: 2 },
+  card: { backgroundColor: '#FFFCF6', borderRadius: 18, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: '#E4DDCC' },
+  infoRow: { flexDirection: 'row', gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#E4DDCC' },
   infoIcon: { fontSize: 16, marginTop: 2 },
-  infoLabel: { fontSize: 13, fontWeight: '600', color: COLORS.ink },
-  infoSub: { fontSize: 11, color: COLORS.inkSoft, marginTop: 1 },
-  button: { marginBottom: 10 },
+  infoLabel: { fontSize: 13, fontWeight: '600', color: '#1B2A22' },
+  infoSub: { fontSize: 11, color: '#6B7A70', marginTop: 1 },
 });

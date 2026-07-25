@@ -11,7 +11,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 
 export default function ProfileScreen({ navigation }) {
-  const { user, logout } = useAuth();
+  const { user, logout, switchRole } = useAuth();
+  const isShopOwner = user?.role === 'shop_owner';
 
   const handleLogout = () => {
     const confirmLogout = () => {
@@ -34,15 +35,47 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
+  const handleSwitchRole = async () => {
+    const newRole = isShopOwner ? 'customer' : 'shop_owner';
+    Alert.alert(
+      'Switch Role',
+      `Switch to ${newRole === 'shop_owner' ? 'Shop Owner' : 'Customer'} mode?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Switch',
+          onPress: async () => {
+            const result = await switchRole(newRole);
+            if (result.success) {
+              Alert.alert('✅ Success', `Switched to ${newRole} mode`);
+              // ✅ Force reload to update TabNavigator
+              navigation.replace('Main');
+            } else {
+              Alert.alert('❌ Error', 'Failed to switch role');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.avatar}>👤</Text>
         <Text style={styles.name}>{user?.fullName || 'User'}</Text>
         <Text style={styles.email}>{user?.email || 'email@example.com'}</Text>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>✅ Verified</Text>
+        <View style={[styles.roleBadge, { backgroundColor: isShopOwner ? '#4CAF50' : '#2196F3' }]}>
+          <Text style={styles.roleText}>{isShopOwner ? '🏪 Shop Owner' : '👤 Customer'}</Text>
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <TouchableOpacity style={styles.switchButton} onPress={handleSwitchRole}>
+          <Text style={styles.switchText}>
+            {isShopOwner ? 'Switch to Customer Mode' : 'Switch to Shop Owner Mode'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.section}>
@@ -62,6 +95,21 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.menuText}>Verification Documents</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
+
+        {isShopOwner && (
+          <>
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('AddBike')}>
+              <Text style={styles.menuIcon}>➕</Text>
+              <Text style={styles.menuText}>Add Bike</Text>
+              <Text style={styles.menuArrow}>›</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MyBikes')}>
+              <Text style={styles.menuIcon}>🏍️</Text>
+              <Text style={styles.menuText}>My Bikes</Text>
+              <Text style={styles.menuArrow}>›</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -83,20 +131,12 @@ const styles = StyleSheet.create({
   avatar: { fontSize: 64, marginBottom: 8 },
   name: { fontSize: 24, fontWeight: '700', color: '#1a1a1a' },
   email: { fontSize: 16, color: '#666' },
-  badge: {
-    backgroundColor: '#2ECC71',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  badgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  section: {
-    backgroundColor: '#fff',
-    marginTop: 12,
-    padding: 16,
-  },
+  roleBadge: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 20, marginTop: 8 },
+  roleText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  section: { backgroundColor: '#fff', marginTop: 12, padding: 16 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: '#1a1a1a', marginBottom: 12 },
+  switchButton: { backgroundColor: '#4CAF50', padding: 14, borderRadius: 8, alignItems: 'center' },
+  switchText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -108,7 +148,7 @@ const styles = StyleSheet.create({
   menuText: { flex: 1, fontSize: 16, color: '#333' },
   menuArrow: { fontSize: 18, color: '#ccc' },
   logoutButton: {
-    backgroundColor: '#4CAF50', 
+    backgroundColor: '#4CAF50',
     padding: 16,
     marginTop: 20,
     marginBottom: 30,

@@ -24,8 +24,6 @@ export default function RegisterScreen({ navigation }) {
   const handleRegister = async () => {
     const { fullName, email, phone, password } = formData;
     
-    console.log('📤 FULL FORM DATA:', JSON.stringify(formData, null, 2));
-    
     if (!fullName || !email || !phone || !password) {
       Alert.alert('Error', 'Please fill all fields');
       return;
@@ -33,7 +31,6 @@ export default function RegisterScreen({ navigation }) {
 
     setLoading(true);
     try {
-      // ✅ Ensure phone is sent as string
       const payload = {
         fullName: fullName.trim(),
         email: email.trim().toLowerCase(),
@@ -41,20 +38,19 @@ export default function RegisterScreen({ navigation }) {
         password: password.trim(),
       };
       
-      console.log('📤 SENDING PAYLOAD:', JSON.stringify(payload, null, 2));
+      console.log('📤 Register Payload:', payload);
       
       const response = await authAPI.register(payload);
-      console.log('📥 RESPONSE:', JSON.stringify(response, null, 2));
+      console.log('📥 Register Response:', response);
       
       if (response.success) {
-        Alert.alert('Success', 'Registration successful! Please verify OTP.', [
-          { text: 'OK', onPress: () => navigation.navigate('OtpVerification', { userId: response.userId }) }
-        ]);
+        console.log('✅ Navigate to OTP with userId:', response.userId);
+        navigation.navigate('OtpVerification', { userId: response.userId });
       } else {
         Alert.alert('Registration Failed', response.message || 'Something went wrong');
       }
     } catch (error) {
-      console.error('❌ ACTUAL SERVER ERROR:', JSON.stringify(error));
+      console.error('❌ Register Error:', error);
       Alert.alert('Registration Failed', error.message || 'Network Error');
     } finally {
       setLoading(false);

@@ -8,6 +8,7 @@ import HistoryScreen from '../screens/OrderHistory/HistoryScreen';
 import FavoritesScreen from '../screens/Favorites/FavoritesScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import SOSScreen from '../screens/SOS/SOSScreen';
+import ShopProfileScreen from '../screens/Shop/ShopProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -38,6 +39,7 @@ export default function TabNavigator() {
           else if (route.name === 'Favorites') iconName = focused ? 'heart' : 'heart-outline';
           else if (route.name === 'SOS') iconName = focused ? 'alert-circle' : 'alert-circle-outline';
           else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
+          else if (route.name === 'Shop') iconName = focused ? 'storefront' : 'storefront-outline';
           return <Ionicons name={iconName} size={size || 22} color={color} />;
         },
       })}
@@ -46,6 +48,12 @@ export default function TabNavigator() {
       <Tab.Screen name="Orders" component={HistoryScreen} />
       <Tab.Screen name="Favorites" component={FavoritesScreen} />
       <Tab.Screen name="SOS" component={SOSScreen} />
+      
+      {/* ✅ Shop Owner Tab */}
+      {isShopOwner && (
+        <Tab.Screen name="Shop" component={ShopProfileScreen} />
+      )}
+      
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

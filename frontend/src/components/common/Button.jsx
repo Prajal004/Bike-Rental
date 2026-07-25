@@ -1,9 +1,10 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { COLORS } from '../../styles/colors';
 
 const Button = ({ 
-  label, 
-  title,
+  title, 
+  label,
   onPress, 
   loading = false, 
   disabled = false, 
@@ -11,7 +12,7 @@ const Button = ({
   style = {},
   textStyle = {}
 }) => {
-  const buttonText = label || title || 'Button';
+  const buttonText = title || label || 'Button';
   const getBackgroundColor = () => {
     if (disabled) return '#ccc';
     if (variant === 'brick') return '#9C4A2E';
@@ -31,6 +32,7 @@ const Button = ({
       ]}
       onPress={onPress}
       disabled={disabled || loading}
+      activeOpacity={0.7}
     >
       {loading ? (
         <ActivityIndicator color="#fff" />

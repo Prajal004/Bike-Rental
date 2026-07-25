@@ -16,7 +16,9 @@ export const AuthProvider = ({ children }) => {
       const token = await AsyncStorage.getItem('authToken');
       const userData = await AsyncStorage.getItem('userData');
       if (token && userData) {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        console.log('📥 Loaded user:', parsedUser);
+        setUser(parsedUser);
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
@@ -83,13 +85,42 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.removeItem('userData');
       setUser(null);
       setIsAuthenticated(false);
+      console.log('✅ Logout successful');
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
+  // ✅ switchRole — Force update
+  const switchRole = async (role) => {
+    try {
+      console.log('🔄 Switching role to:', role);
+      console.log('👤 Current user:', user);
+      
+      const updatedUser = { ...user, role };
+      await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      
+      console.log('✅ Role switched to:', role);
+      console.log('👤 Updated user:', updatedUser);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Switch role error:', error);
+      return { success: false, message: error.message };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, login, verifyOTP, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isLoading, 
+      isAuthenticated, 
+      login, 
+      verifyOTP, 
+      logout,
+      switchRole
+    }}>
       {children}
     </AuthContext.Provider>
   );

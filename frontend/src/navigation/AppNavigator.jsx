@@ -21,7 +21,7 @@ export default function AppNavigator() {
         {!isAuthenticated ? (
           <Stack.Screen name="Auth" component={AuthNavigator} />
         ) : (
-          <Stack.Screen name="Main" component={MainStack} />
+          <Stack.Screen name="MainStack" component={MainStack} />
         )}
       </Stack.Navigator>
     </NavigationContainer>
