@@ -2,7 +2,8 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
 const Button = ({ 
-  title, 
+  label, 
+  title,
   onPress, 
   loading = false, 
   disabled = false, 
@@ -10,12 +11,14 @@ const Button = ({
   style = {},
   textStyle = {}
 }) => {
+  const buttonText = label || title || 'Button';
   const getBackgroundColor = () => {
     if (disabled) return '#ccc';
-    if (variant === 'primary') return '#E63946';
+    if (variant === 'brick') return '#9C4A2E';
+    if (variant === 'primary') return '#4CAF50';
     if (variant === 'secondary') return '#457B9D';
     if (variant === 'success') return '#2ECC71';
-    return '#E63946';
+    return '#4CAF50';
   };
 
   return (
@@ -32,7 +35,7 @@ const Button = ({
       {loading ? (
         <ActivityIndicator color="#fff" />
       ) : (
-        <Text style={[styles.text, textStyle]}>{title}</Text>
+        <Text style={[styles.text, textStyle]}>{buttonText}</Text>
       )}
     </TouchableOpacity>
   );
@@ -41,10 +44,11 @@ const Button = ({
 const styles = StyleSheet.create({
   button: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 50,
+    width: '100%',
   },
   text: {
     color: '#fff',

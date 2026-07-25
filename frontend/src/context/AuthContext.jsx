@@ -9,22 +9,17 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    loadUser();
-  }, []);
+  useEffect(() => { loadUser(); }, []);
 
   const loadUser = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       const userData = await AsyncStorage.getItem('userData');
-      
       if (token && userData) {
         setUser(JSON.parse(userData));
         setIsAuthenticated(true);
-        console.log('✅ User loaded from storage');
       } else {
         setIsAuthenticated(false);
-        console.log('❌ No user found');
       }
     } catch (error) {
       console.error('Load user error:', error);
@@ -38,11 +33,23 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.login(email, password);
       if (response.success) {
-        return { success: true, userId: response.userId };
+        const userData = {
+          id: response.userId,
+          fullName: response.user?.fullName || email.split('@')[0],
+          email: email,
+          phone: response.user?.phone || '',
+          role: response.user?.role || 'customer',
+          walletBalance: response.user?.walletBalance || 0,
+        };
+        await AsyncStorage.setItem('authToken', response.token);
+        await AsyncStorage.setItem('userData', JSON.stringify(userData));
+        setUser(userData);
+        setIsAuthenticated(true);
+        return { success: true };
       }
       return { success: false, message: response.message };
     } catch (error) {
-      return { success: false, message: error.message };
+      return { success: false, message: error?.message || 'Login failed' };
     }
   };
 
@@ -58,18 +65,15 @@ export const AuthProvider = ({ children }) => {
           role: response.user?.role || 'customer',
           walletBalance: response.user?.walletBalance || 0,
         };
-        
         await AsyncStorage.setItem('authToken', response.token);
         await AsyncStorage.setItem('userData', JSON.stringify(userData));
-        
         setUser(userData);
         setIsAuthenticated(true);
-        console.log('✅ OTP verified, user authenticated');
         return { success: true };
       }
       return { success: false, message: response.message };
     } catch (error) {
-      return { success: false, message: error.message };
+      return { success: false, message: error?.message || 'Verification failed' };
     }
   };
 
@@ -79,23 +83,13 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.removeItem('userData');
       setUser(null);
       setIsAuthenticated(false);
-      console.log('✅ Logout successful');
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated,
-        login,
-        verifyOTP,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, login, verifyOTP, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -103,9 +97,7 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
 

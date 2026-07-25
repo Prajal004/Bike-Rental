@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
-  StyleSheet, Alert, ActivityIndicator, ScrollView, SafeAreaView
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import authAPI from '../../api/auth.api';
 
@@ -16,20 +23,39 @@ export default function RegisterScreen({ navigation }) {
 
   const handleRegister = async () => {
     const { fullName, email, phone, password } = formData;
+    
+    console.log('📤 FULL FORM DATA:', JSON.stringify(formData, null, 2));
+    
     if (!fullName || !email || !phone || !password) {
       Alert.alert('Error', 'Please fill all fields');
       return;
     }
+
     setLoading(true);
     try {
-      const response = await authAPI.register(formData);
+      // ✅ Ensure phone is sent as string
+      const payload = {
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
+        phone: String(phone).trim(),
+        password: password.trim(),
+      };
+      
+      console.log('📤 SENDING PAYLOAD:', JSON.stringify(payload, null, 2));
+      
+      const response = await authAPI.register(payload);
+      console.log('📥 RESPONSE:', JSON.stringify(response, null, 2));
+      
       if (response.success) {
         Alert.alert('Success', 'Registration successful! Please verify OTP.', [
           { text: 'OK', onPress: () => navigation.navigate('OtpVerification', { userId: response.userId }) }
         ]);
+      } else {
+        Alert.alert('Registration Failed', response.message || 'Something went wrong');
       }
     } catch (error) {
-      Alert.alert('Registration Failed', error.message || 'Something went wrong');
+      console.error('❌ ACTUAL SERVER ERROR:', JSON.stringify(error));
+      Alert.alert('Registration Failed', error.message || 'Network Error');
     } finally {
       setLoading(false);
     }
@@ -53,16 +79,16 @@ export default function RegisterScreen({ navigation }) {
             style={styles.input}
             placeholder="you@email.com"
             value={formData.email}
-            onChangeText={setFormData}
+            onChangeText={(text) => setFormData({ ...formData, email: text })}
             keyboardType="email-address"
             autoCapitalize="none"
           />
           <Text style={styles.label}>Phone</Text>
           <TextInput
             style={styles.input}
-            placeholder="9863330576"
+            placeholder="number"
             value={formData.phone}
-            onChangeText={setFormData}
+            onChangeText={(text) => setFormData({ ...formData, phone: text })}
             keyboardType="phone-pad"
           />
           <Text style={styles.label}>Password</Text>
@@ -70,7 +96,7 @@ export default function RegisterScreen({ navigation }) {
             style={styles.input}
             placeholder="Create password"
             value={formData.password}
-            onChangeText={setFormData}
+            onChangeText={(text) => setFormData({ ...formData, password: text })}
             secureTextEntry
           />
           <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={loading}>
@@ -87,7 +113,13 @@ export default function RegisterScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#fff' },
-  container: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 40, paddingBottom: 40, justifyContent: 'center' },
+  container: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 40,
+    justifyContent: 'center',
+  },
   title: { fontSize: 32, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 8 },
   subtitle: { fontSize: 16, color: '#666', marginBottom: 30 },
   form: { width: '100%' },

@@ -1,31 +1,37 @@
 import React from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, Alert
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import { COLORS } from '../../styles/colors';
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            navigation.replace('Auth');
-          }
-        }
-      ]
-    );
+    const confirmLogout = () => {
+      logout();
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to logout?')) {
+        confirmLogout();
+      }
+    } else {
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Logout', style: 'destructive', onPress: confirmLogout },
+        ]
+      );
+    }
   };
 
   return (
@@ -40,21 +46,20 @@ export default function ProfileScreen({ navigation }) {
       </View>
 
       <View style={styles.section}>
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('VerifyDocuments')}>
-          <Text style={styles.menuIcon}>📄</Text>
-          <Text style={styles.menuText}>Verification Documents</Text>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
-
+        <Text style={styles.sectionTitle}>Menu</Text>
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Orders')}>
           <Text style={styles.menuIcon}>📋</Text>
           <Text style={styles.menuText}>My Orders</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('SOS')}>
           <Text style={styles.menuIcon}>🆘</Text>
           <Text style={styles.menuText}>SOS</Text>
+          <Text style={styles.menuArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('VerifyDocuments')}>
+          <Text style={styles.menuIcon}>📄</Text>
+          <Text style={styles.menuText}>Verification Documents</Text>
           <Text style={styles.menuArrow}>›</Text>
         </TouchableOpacity>
       </View>
@@ -91,6 +96,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 16,
   },
+  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#1a1a1a', marginBottom: 12 },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -102,7 +108,7 @@ const styles = StyleSheet.create({
   menuText: { flex: 1, fontSize: 16, color: '#333' },
   menuArrow: { fontSize: 18, color: '#ccc' },
   logoutButton: {
-    backgroundColor: '#E63946',
+    backgroundColor: '#4CAF50', 
     padding: 16,
     marginTop: 20,
     marginBottom: 30,
