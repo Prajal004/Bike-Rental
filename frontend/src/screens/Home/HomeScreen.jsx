@@ -10,7 +10,14 @@ import motorbikeAPI from '../../api/motorbike.api';
 export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
   const [bikes, setBikes] = useState([]);
+  const [filteredBikes, setFilteredBikes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBrand, setSelectedBrand] = useState('All');
+
+  const brands = [
+    'All', 'Hero', 'Honda', 'Yamaha', 'Bajaj', 'TVS',
+    'Royal Enfield', 'KTM', 'Triumph'
+  ];
 
   useEffect(() => {
     fetchBikes();
@@ -21,6 +28,7 @@ export default function HomeScreen({ navigation }) {
       const response = await motorbikeAPI.getAll();
       if (response.success) {
         setBikes(response.motorcycles || []);
+        setFilteredBikes(response.motorcycles || []);
       }
     } catch (error) {
       console.error('Error fetching bikes:', error);
@@ -29,10 +37,19 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+  const filterByBrand = (brand) => {
+    setSelectedBrand(brand);
+    if (brand === 'All') {
+      setFilteredBikes(bikes);
+    } else {
+      setFilteredBikes(bikes.filter(bike => bike.brand === brand));
+    }
+  };
+
   const renderBike = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => navigation.navigate('MotorbikeDetail', { bikeId: item.id })}
+      onPress={() => navigation.navigate('MotorbikeDetail', { bike: item })}
     >
       <View style={styles.cardImage}>
         <Text style={styles.bikeEmoji}>🏍️</Text>
@@ -77,21 +94,36 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.bannerText}>Enjoy prajal services and pay easily</Text>
         </View>
 
+        {/* Brand Filter */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.brandFilter}>
+          {brands.map((brand) => (
+            <TouchableOpacity
+              key={brand}
+              style={[styles.brandChip, selectedBrand === brand && styles.brandChipActive]}
+              onPress={() => filterByBrand(brand)}
+            >
+              <Text style={[styles.brandChipText, selectedBrand === brand && styles.brandChipTextActive]}>
+                {brand}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Around you</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAll}>See All</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>
+            {selectedBrand === 'All' ? 'All Bikes' : selectedBrand}
+          </Text>
+          <Text style={styles.bikeCount}>{filteredBikes.length} bikes</Text>
         </View>
 
-        {bikes.length === 0 ? (
+        {filteredBikes.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No bikes available</Text>
             <Text style={styles.emptySubtext}>Check back later!</Text>
           </View>
         ) : (
           <FlatList
-            data={bikes}
+            data={filteredBikes}
             renderItem={renderBike}
             keyExtractor={(item) => item.id}
             numColumns={2}
@@ -128,15 +160,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   bannerText: { color: '#fff', fontSize: 17, fontWeight: '600' },
+  brandFilter: { paddingHorizontal: 16, paddingVertical: 12 },
+  brandChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  brandChipActive: {
+    backgroundColor: '#16342A',
+    borderColor: '#16342A',
+  },
+  brandChipText: { fontSize: 12, color: '#333' },
+  brandChipTextActive: { color: '#fff' },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 22,
+    paddingTop: 8,
     paddingBottom: 10,
   },
   sectionTitle: { fontSize: 16, fontWeight: '600', color: '#1B2A22' },
-  seeAll: { fontSize: 12, color: '#9C4A2E', fontWeight: '700' },
+  bikeCount: { fontSize: 12, color: '#6B7A70' },
   grid: { paddingHorizontal: 12 },
   row: { justifyContent: 'space-between' },
   card: {

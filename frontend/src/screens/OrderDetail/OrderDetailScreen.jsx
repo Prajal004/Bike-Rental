@@ -6,6 +6,10 @@ import Button from '../../components/common/Button';
 export default function OrderDetailScreen({ navigation, route }) {
   const { order } = route.params || {};
 
+  const handleContact = () => {
+    navigation.navigate('Chat');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.topbar}>
@@ -47,7 +51,7 @@ export default function OrderDetailScreen({ navigation, route }) {
             </View>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoIcon}>��️</Text>
+            <Text style={styles.infoIcon}>🗓️</Text>
             <View>
               <Text style={styles.infoLabel}>Rental Duration</Text>
               <Text style={styles.infoSub}>25 Jun 2026 → 26 Jun 2026</Text>
@@ -55,8 +59,9 @@ export default function OrderDetailScreen({ navigation, route }) {
           </View>
         </View>
 
-        <Button title="Contact the Rental Office" onPress={() => navigation.navigate('Chat')} variant="secondary" />
-        <Button title="Cancel Order" variant="danger" onPress={() => Alert.alert('Cancel Order', 'Are you sure?')} />
+        {/* ✅ Contact Rental Office Button */}
+        <Button title="📞 Contact the Rental Office" onPress={handleContact} variant="secondary" />
+        <Button title="❌ Cancel Order" variant="danger" onPress={() => Alert.alert('Cancel Order', 'Are you sure?')} />
       </ScrollView>
     </View>
   );
