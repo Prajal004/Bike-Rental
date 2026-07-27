@@ -1,41 +1,44 @@
 const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
-// Use admin user instead of postgres
+// Import models
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'motorcycle_rental',
-  process.env.DB_USER || 'admin',
-  process.env.DB_PASSWORD || 'Hero@004',
+  process.env.DB_NAME || 'bikeflow',
+  process.env.DB_USER || 'postgres',
+  process.env.DB_PASSWORD || '',
   {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
-    logging: false,
+    logging: process.env.DB_LOGGING === 'true' ? console.log : false,
     pool: {
       max: 5,
       min: 0,
       acquire: 30000,
       idle: 10000
+    },
+    define: {
+      timestamps: true,
+      underscored: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at'
     }
   }
 );
 
-const connectDB = async () => {
+// Test Connection
+const testConnection = async () => {
   try {
     await sequelize.authenticate();
-    console.log(' PostgreSQL Connected successfully');
-    
-    // Try to sync
-    try {
-      await sequelize.sync({ alter: true });
-      console.log(' Database tables synced');
-    } catch (syncError) {
-      console.log(' Sync warning:', syncError.message);
-      console.log(' Database connection ready (tables may need manual creation)');
-    }
+    console.log('PostgreSQL connected successfully!');
+    return true;
   } catch (error) {
-    console.error(' PostgreSQL Connection Error:', error.message);
-    process.exit(1);
+    console.error('Unable to connect to PostgreSQL:', error.message);
+    return false;
   }
 };
 
-module.exports = { sequelize, connectDB };
+module.exports = {
+  sequelize,
+  testConnection
+};
