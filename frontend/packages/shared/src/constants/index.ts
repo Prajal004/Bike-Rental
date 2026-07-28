@@ -1,0 +1,83 @@
+export const COLORS = {
+  primary: '#4CAF50',
+  primaryDark: '#388E3C',
+  primaryLight: '#E8F5E9',
+  secondary: '#78909C',
+  danger: '#E53935',
+  warning: '#FFB300',
+  success: '#4CAF50',
+  white: '#FFFFFF',
+  black: '#222222',
+  gray: '#888888',
+  grayLight: '#F8F9FA',
+  grayDark: '#666666',
+  border: '#EEEEEE',
+  text: '#222222',
+  textSecondary: '#666666',
+  textHint: '#999999',
+  star: '#FFB800',
+  starEmpty: '#DDDDDD',
+  shadow: 'rgba(0,0,0,0.08)',
+  cardBg: '#FFFFFF',
+  headerBg: '#4CAF50',
+  tabActive: '#4CAF50',
+  tabInactive: '#999999',
+};
+
+export const ROUTES = {
+  HOME: '/',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  OTP: '/otp',
+  BIKE_DETAIL: '/bike/:id',
+  BOOKING: '/booking',
+  PAYMENT: '/payment',
+  ORDER_HISTORY: '/orders',
+  PROFILE: '/profile',
+  SOS: '/sos',
+  REFERRAL: '/referral',
+  SHOP: '/shop',
+  NOTIFICATIONS: '/notifications',
+};
+
+export const API_ENDPOINTS = {
+  AUTH: {
+    REGISTER: '/auth/register',
+    LOGIN: '/auth/login',
+    VERIFY_OTP: '/auth/verify-otp',
+    RESEND_OTP: '/auth/resend-otp',
+    PROFILE: '/auth/profile',
+  },
+  MOTORCYCLES: {
+    ALL: '/motorcycles',
+    FEATURED: '/motorcycles/featured',
+    NEARBY: '/motorcycles/nearby',
+    SEARCH: '/motorcycles/search',
+  },
+  SHOPS: {
+    ALL: '/shops',
+    REGISTER: '/shops/register',
+  },
+  RENTALS: {
+    CREATE: '/rentals',
+    USER: '/rentals/user',
+  },
+  PAYMENTS: {
+    ESEWA: '/payments/esewa',
+    KHALTI: '/payments/khalti',
+    FONEPAY: '/payments/fonepay',
+  },
+  SOS: {
+    TRIGGER: '/sos/trigger',
+    ACTIVE: '/sos/active',
+    CANCEL: '/sos/cancel',
+  },
+  REFERRALS: {
+    MY_CODE: '/referrals/my-code',
+    WALLET: '/referrals/wallet',
+    APPLY: '/referrals/apply',
+  },
+  REVIEWS: '/reviews',
+  DOCUMENTS: '/documents',
+  NOTIFICATIONS: '/notifications',
+};
