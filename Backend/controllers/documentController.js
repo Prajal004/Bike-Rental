@@ -1,6 +1,7 @@
-const { Document } = require('../models');
+const { Document } = require('../models/Document');
+const { User } = require('../models/User');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
-const { validateDocument } = require('../utils/validation');
+const { validation } = require('../utils/validation');
 
 // Upload document
 exports.uploadDocument = async (req, res) => {
@@ -9,7 +10,6 @@ exports.uploadDocument = async (req, res) => {
     const userId = req.user.id;
     const role = req.user.role;
 
-    // Validate document type
     const allowedTypes = {
       shop_owner: ['shop_registration', 'pan_number', 'vat_number', 'business_license', 'shop_photo'],
       customer: ['citizenship_front', 'citizenship_back', 'driving_license_front', 'driving_license_back'],
@@ -23,7 +23,6 @@ exports.uploadDocument = async (req, res) => {
       });
     }
 
-    // Check if file uploaded
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -105,7 +104,6 @@ exports.deleteDocument = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Document not found' });
     }
 
-    // Check ownership
     if (document.userId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }

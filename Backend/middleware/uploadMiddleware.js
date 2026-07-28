@@ -26,7 +26,6 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let folder = 'uploads/';
     
-    // Determine folder based on file type/route
     if (file.fieldname === 'document') {
       folder += 'documents/';
     } else if (file.fieldname === 'bikeImage' || file.fieldname === 'motorcycleImage') {

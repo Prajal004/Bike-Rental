@@ -10,12 +10,10 @@ const generateToken = (id) => {
   });
 };
 
-// @desc    Register user
 const register = async (req, res) => {
   try {
     const { fullName, email, phone, password, referralCode } = req.body;
 
-    // ✅ Validate required fields
     if (!fullName || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
@@ -23,7 +21,6 @@ const register = async (req, res) => {
       });
     }
 
-    // Check if user exists
     const userExists = await User.findOne({
       where: {
         [Op.or]: [{ email }, { phone }]
@@ -37,15 +34,13 @@ const register = async (req, res) => {
       });
     }
 
-    // Create user
     const user = await User.create({
-      fullName,
+      name: fullName,
       email,
       phone,
       password,
     });
 
-    // Handle referral
     if (referralCode) {
       const referrer = await User.findOne({
         where: { referralCode }
@@ -56,13 +51,11 @@ const register = async (req, res) => {
       }
     }
 
-    // Generate OTP
     const { otp, expiresAt } = generateOTPWithExpiry();
     user.otpCode = otp;
     user.otpExpiresAt = expiresAt;
     await user.save();
 
-    // Send OTP
     await sendOTP(phone, otp);
 
     res.status(201).json({
@@ -79,7 +72,6 @@ const register = async (req, res) => {
   }
 };
 
-// @desc    Login user
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -131,7 +123,6 @@ const login = async (req, res) => {
   }
 };
 
-// @desc    Verify OTP
 const verifyOTP = async (req, res) => {
   try {
     const { userId, otp } = req.body;
@@ -172,7 +163,7 @@ const verifyOTP = async (req, res) => {
       token,
       user: {
         id: user.id,
-        fullName: user.fullName,
+        name: user.name,
         email: user.email,
         phone: user.phone,
         referralCode: user.referralCode,
@@ -189,7 +180,6 @@ const verifyOTP = async (req, res) => {
   }
 };
 
-// @desc    Resend OTP
 const resendOTP = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -230,7 +220,6 @@ const resendOTP = async (req, res) => {
   }
 };
 
-// @desc    Get user profile
 const getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {

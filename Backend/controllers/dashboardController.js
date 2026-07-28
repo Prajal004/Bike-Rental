@@ -1,19 +1,33 @@
-const { sequelize } = require('../config/database');
-const { User, Shop, Motorcycle, Booking, Payment } = require('../models');
+const Shop = require('../models/Shop');
+const Motorcycle = require('../models/Motorcycle');
+const Booking = require('../models/Booking');
+const Payment = require('../models/Payment');
+const User = require('../models/User');
 
-// Get Shop Owner Dashboard Stats
+// Get Shop Owner Dashboard
 exports.getShopDashboard = async (req, res) => {
   try {
-    const shopId = req.user.shopId;
+    // Find shop by user id
+    const shop = await Shop.findOne({
+      where: { userId: req.user.id }
+    });
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found for this user'
+      });
+    }
+
+    const shopId = shop.id;
     
     const [totalBikes, totalBookings, totalRevenue, pendingBookings] = await Promise.all([
       Motorcycle.count({ where: { shopId, isActive: true } }),
       Booking.count({ where: { shopId } }),
-      Payment.sum('amount', { where: { shopId, status: 'completed' } }),
+      Payment.sum('amount', { where: { shopId, status: 'success' } }),
       Booking.count({ where: { shopId, status: 'pending' } })
     ]);
 
-    // Recent bookings
     const recentBookings = await Booking.findAll({
       where: { shopId },
       limit: 5,
@@ -24,6 +38,12 @@ exports.getShopDashboard = async (req, res) => {
     res.json({
       success: true,
       data: {
+        shop: {
+          id: shop.id,
+          name: shop.name,
+          address: shop.address,
+          status: shop.status
+        },
         totalBikes,
         totalBookings,
         totalRevenue: totalRevenue || 0,
@@ -32,11 +52,15 @@ exports.getShopDashboard = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Shop Dashboard Error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error'
+    });
   }
 };
 
-// Get Customer Dashboard Stats
+// Get Customer Dashboard
 exports.getCustomerDashboard = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -47,12 +71,14 @@ exports.getCustomerDashboard = async (req, res) => {
       Booking.count({ where: { customerId: userId, status: 'completed' } })
     ]);
 
-    // Recent bookings
     const recentBookings = await Booking.findAll({
       where: { customerId: userId },
       limit: 5,
       order: [['createdAt', 'DESC']],
-      include: [{ model: Motorcycle, attributes: ['name', 'brand', 'images'] }]
+      include: [
+        { model: Motorcycle, attributes: ['name', 'brand', 'images'] },
+        { model: Shop, attributes: ['name', 'address'] }
+      ]
     });
 
     res.json({
@@ -65,11 +91,15 @@ exports.getCustomerDashboard = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Customer Dashboard Error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error'
+    });
   }
 };
 
-// Get Admin Dashboard Stats
+// Get Admin Dashboard
 exports.getAdminDashboard = async (req, res) => {
   try {
     const [totalUsers, totalShops, totalBikes, totalBookings, totalRevenue] = await Promise.all([
@@ -77,7 +107,7 @@ exports.getAdminDashboard = async (req, res) => {
       Shop.count(),
       Motorcycle.count(),
       Booking.count(),
-      Payment.sum('amount', { where: { status: 'completed' } })
+      Payment.sum('amount', { where: { status: 'success' } })
     ]);
 
     res.json({
@@ -91,6 +121,10 @@ exports.getAdminDashboard = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Admin Dashboard Error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error'
+    });
   }
 };

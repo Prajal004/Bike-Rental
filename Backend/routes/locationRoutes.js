@@ -1,16 +1,21 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
 const {
+  addLocation,
   getLocations,
-  getNearbyLocations,
-  searchLocations,
-  validateLocation,
+  getLocationById,
+  updateLocation,
+  deleteLocation
 } = require('../controllers/locationController');
 
 // Public routes
 router.get('/', getLocations);
-router.get('/nearby', getNearbyLocations);
-router.get('/search', searchLocations);
-router.post('/validate', validateLocation);
+router.get('/:id', getLocationById);
+
+// Protected routes
+router.post('/', protect, addLocation);
+router.put('/:id', protect, updateLocation);
+router.delete('/:id', protect, deleteLocation);
 
 module.exports = router;

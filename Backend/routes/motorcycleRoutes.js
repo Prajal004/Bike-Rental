@@ -1,27 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
+const { isShopOwner } = require('../middleware/roleMiddleware');
 const {
-  getMotorcycles,
-  getFeaturedMotorcycles,
-  getMotorcycleById,
-  getNearbyMotorcycles,
-  searchMotorcycles,
   addMotorcycle,
+  getMotorcycles,
+  getMotorcycleById,
   updateMotorcycle,
-  deleteMotorcycle,
+  deleteMotorcycle
 } = require('../controllers/motorcycleController');
 
 // Public routes
 router.get('/', getMotorcycles);
-router.get('/featured', getFeaturedMotorcycles);
-router.get('/nearby', getNearbyMotorcycles);
-router.get('/search', searchMotorcycles);
 router.get('/:id', getMotorcycleById);
 
 // Protected routes
-router.post('/', protect, addMotorcycle);
-router.put('/:id', protect, updateMotorcycle);
-router.delete('/:id', protect, deleteMotorcycle);
+router.post('/', protect, isShopOwner, addMotorcycle);
+router.put('/:id', protect, isShopOwner, updateMotorcycle);
+router.delete('/:id', protect, isShopOwner, deleteMotorcycle);
 
 module.exports = router;

@@ -1,131 +1,169 @@
 const Shop = require('../models/Shop');
+const User = require('../models/User');
 
-// @desc    Register a shop
-// @route   POST /api/shops/register
-// @access  Private
-const registerShop = async (req, res) => {
+exports.createShop = async (req, res) => {
   try {
-    const {
-      shopName,
-      shopNameNepali,
-      description,
-      address,
-      latitude,
-      longitude,
-      phone,
-      email,
-      registrationNumber,
-      panNumber,
-      documentImage,
-      images,
-      openTime,
-      closeTime,
-    } = req.body;
+    const { name, address, phone, email, description, registrationNumber, panNumber } = req.body;
 
-    // Validate required fields
-    if (!shopName || !address || !phone) {
-      return res.status(400).json({
-        success: false,
-        message: 'Shop name, address and phone are required',
-      });
-    }
-
-    // Check if user already has a shop
-    const existingShop = await Shop.findOne({ 
-      where: { userId: req.user.id } 
+    const existingShop = await Shop.findOne({
+      where: { registrationNumber }
     });
-    
+
     if (existingShop) {
       return res.status(400).json({
         success: false,
-        message: 'You already have a shop registered',
+        message: 'Shop with this registration number already exists'
       });
     }
 
     const shop = await Shop.create({
       userId: req.user.id,
-      shopName,
-      shopNameNepali: shopNameNepali || null,
-      description: description || null,
+      name,
       address,
-      latitude: latitude || null,
-      longitude: longitude || null,
       phone,
-      email: email || null,
-      registrationNumber: registrationNumber || null,
-      panNumber: panNumber || null,
-      documentImage: documentImage || null,
-      images: images || [],
-      openTime: openTime || null,
-      closeTime: closeTime || null,
+      email,
+      description,
+      registrationNumber,
+      panNumber,
+      status: 'pending'
     });
 
     res.status(201).json({
       success: true,
-      message: 'Shop registered successfully',
-      shop,
+      message: 'Shop created successfully',
+      data: shop
     });
   } catch (error) {
-    console.error('Shop Registration Error:', error);
+    console.error('Create Shop Error:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Server error',
+      message: error.message || 'Server error'
     });
   }
 };
 
-// @desc    Get all shops
-// @route   GET /api/shops
-// @access  Public
-const getAllShops = async (req, res) => {
+exports.getShops = async (req, res) => {
   try {
     const shops = await Shop.findAll({
-      where: { isVerified: true },
+      where: { status: 'approved', isActive: true },
+      include: [{ model: User, attributes: ['name', 'email'] }]
     });
 
-    res.status(200).json({
-      success: true,
-      shops,
-      total: shops.length,
-    });
+    res.json({ success: true, data: shops });
   } catch (error) {
     console.error('Get Shops Error:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Server error',
+      message: error.message || 'Server error'
     });
   }
 };
 
-// @desc    Get shop by ID
-// @route   GET /api/shops/:id
-// @access  Public
-const getShopById = async (req, res) => {
+exports.getShopById = async (req, res) => {
   try {
-    const shop = await Shop.findByPk(req.params.id);
-    
+    const shop = await Shop.findByPk(req.params.id, {
+      include: [{ model: User, attributes: ['name', 'email'] }]
+    });
+
     if (!shop) {
       return res.status(404).json({
         success: false,
-        message: 'Shop not found',
+        message: 'Shop not found'
       });
     }
 
-    res.status(200).json({
-      success: true,
-      shop,
-    });
+    res.json({ success: true, data: shop });
   } catch (error) {
     console.error('Get Shop Error:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Server error',
+      message: error.message || 'Server error'
     });
   }
 };
 
-module.exports = {
-  registerShop,
-  getAllShops,
-  getShopById,
+exports.getMyShop = async (req, res) => {
+  try {
+    const shop = await Shop.findOne({
+      where: { userId: req.user.id }
+    });
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    res.json({ success: true, data: shop });
+  } catch (error) {
+    console.error('Get My Shop Error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error'
+    });
+  }
+};
+
+exports.updateShop = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, address, phone, email, description } = req.body;
+
+    const shop = await Shop.findOne({
+      where: { id, userId: req.user.id }
+    });
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    await shop.update({ name, address, phone, email, description });
+
+    res.json({
+      success: true,
+      message: 'Shop updated successfully',
+      data: shop
+    });
+  } catch (error) {
+    console.error('Update Shop Error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error'
+    });
+  }
+};
+
+exports.deleteShop = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const shop = await Shop.findOne({
+      where: { id, userId: req.user.id }
+    });
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    shop.isActive = false;
+    await shop.save();
+
+    res.json({
+      success: true,
+      message: 'Shop deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete Shop Error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error'
+    });
+  }
 };

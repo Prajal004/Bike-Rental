@@ -9,6 +9,9 @@ const PORT = process.env.PORT || 5000;
 // Import database
 const { sequelize, testConnection } = require('./config/database');
 
+// Import models (this sets up associations)
+require('./models');
+
 // Middleware
 app.use(cors({
   origin: process.env.CORS_ORIGIN?.split(',') || '*',
@@ -20,22 +23,27 @@ app.use(express.urlencoded({ extended: true }));
 // Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Register all routes directly
+// ✅ Register all routes
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/locations', require('./routes/locationRoutes'));
-app.use('/api/motorcycles', require('./routes/motorcycleRoutes'));
-app.use('/api/payments', require('./routes/paymentRoutes'));
-app.use('/api/referrals', require('./routes/referralRoutes'));
-app.use('/api/rentals', require('./routes/rentalRoutes'));
-app.use('/api/sos', require('./routes/sosRoutes'));
 app.use('/api/shops', require('./routes/shopRoutes'));
+app.use('/api/motorcycles', require('./routes/motorcycleRoutes'));
+app.use('/api/locations', require('./routes/locationRoutes'));
+app.use('/api/rentals', require('./routes/rentalRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use('/api/referrals', require('./routes/referralRoutes'));
+app.use('/api/sos', require('./routes/sosRoutes'));
+app.use('/api/documents', require('./routes/documentRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
     message: 'Server is running with PostgreSQL',
-    features: ['payment', 'referral', 'nepali', 'sos', 'shops', 'locations'],
+    features: ['payment', 'referral', 'nepali', 'sos', 'shops', 'locations', 'rentals'],
     database: 'PostgreSQL',
     environment: process.env.NODE_ENV || 'development'
   });
@@ -69,7 +77,7 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📚 Health Check: http://localhost:${PORT}/api/health`);
+      console.log(`📚 Health Check: http://localhost:5000/api/health`);
       console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🗄️  Database: PostgreSQL`);
     });

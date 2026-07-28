@@ -1,11 +1,15 @@
-const { User, Shop, Motorcycle, Booking, Payment } = require('../models');
+const { User } = require('../models/User');
+const { Shop } = require('../models/Shop');
+const { Motorcycle } = require('../models/Motorcycle');
+const { Booking } = require('../models/Booking');
+const { Payment } = require('../models/Payment');
 const { sequelize } = require('../config/database');
 
 // Get all users
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: { exclude: ['password'] },
+      attributes: { exclude: ['password', 'otpCode', 'otpExpiresAt'] },
       include: [{ model: Shop, attributes: ['id', 'name', 'status'] }]
     });
     res.json({ success: true, data: users });
@@ -30,7 +34,7 @@ exports.getAllShops = async (req, res) => {
 exports.updateShopStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; // 'approved', 'rejected', 'suspended'
+    const { status } = req.body;
 
     const shop = await Shop.findByPk(id);
     if (!shop) {
@@ -71,7 +75,7 @@ exports.getPlatformStats = async (req, res) => {
         (SELECT COUNT(*) FROM shops WHERE status = 'approved') as active_shops,
         (SELECT COUNT(*) FROM motorcycles WHERE status = 'available') as available_bikes,
         (SELECT COUNT(*) FROM bookings) as total_bookings,
-        (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'completed') as total_revenue
+        (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'success') as total_revenue
     `, { type: sequelize.QueryTypes.SELECT });
 
     res.json({ success: true, data: stats[0] });

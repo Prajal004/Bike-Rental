@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const bcrypt = require('bcryptjs');
 
 const User = sequelize.define('User', {
   id: {
@@ -47,6 +48,14 @@ const User = sequelize.define('User', {
     type: DataTypes.UUID,
     allowNull: true
   },
+  otpCode: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  otpExpiresAt: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
   resetPasswordToken: {
     type: DataTypes.STRING,
     allowNull: true
@@ -58,13 +67,36 @@ const User = sequelize.define('User', {
   lastLogin: {
     type: DataTypes.DATE,
     allowNull: true
+  },
+  walletBalance: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0
   }
 }, {
   tableName: 'users',
   timestamps: true,
   underscored: true,
   createdAt: 'created_at',
-  updatedAt: 'updated_at'
+  updatedAt: 'updated_at',
+  hooks: {
+    beforeCreate: async (user) => {
+      if (user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    },
+    beforeUpdate: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    }
+  }
 });
+
+// ✅ Compare Password Method
+User.prototype.comparePassword = async function(password) {
+  return await bcrypt.compare(password, this.password);
+};
 
 module.exports = User;

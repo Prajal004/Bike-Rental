@@ -1,4 +1,8 @@
-const { Review, Booking, Motorcycle, Shop } = require('../models');
+const { Review } = require('../models/Review');
+const { Booking } = require('../models/Booking');
+const { Motorcycle } = require('../models/Motorcycle');
+const { Shop } = require('../models/Shop');
+const { User } = require('../models/User');
 const { sequelize } = require('../config/database');
 
 // Create review
@@ -7,7 +11,6 @@ exports.createReview = async (req, res) => {
     const { bookingId, rating, title, comment, pros, cons, isAnonymous } = req.body;
     const userId = req.user.id;
 
-    // Check if booking exists and belongs to user
     const booking = await Booking.findOne({
       where: { id: bookingId, customerId: userId, status: 'completed' }
     });
@@ -19,7 +22,6 @@ exports.createReview = async (req, res) => {
       });
     }
 
-    // Check if review already exists
     const existingReview = await Review.findOne({ where: { bookingId } });
     if (existingReview) {
       return res.status(400).json({
@@ -41,7 +43,6 @@ exports.createReview = async (req, res) => {
       isAnonymous: isAnonymous || false
     });
 
-    // Update motorcycle rating
     await updateMotorcycleRating(booking.motorcycleId);
     await updateShopRating(booking.shopId);
 
@@ -72,7 +73,6 @@ exports.getMotorcycleReviews = async (req, res) => {
       ]
     });
 
-    // Get rating summary
     const summary = await Review.findAll({
       where: { motorcycleId, status: 'approved' },
       attributes: [
@@ -121,11 +121,11 @@ exports.getShopReviews = async (req, res) => {
   }
 };
 
-// Update review (Admin)
+// Update review status (Admin)
 exports.updateReviewStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; // 'approved', 'rejected', 'flagged'
+    const { status } = req.body;
 
     const review = await Review.findByPk(id);
     if (!review) {
@@ -159,8 +159,8 @@ const updateMotorcycleRating = async (motorcycleId) => {
 
   await Motorcycle.update(
     {
-      rating: parseFloat(result.avgRating) || 0,
-      totalReviews: parseInt(result.totalReviews) || 0
+      rating: parseFloat(result?.avgRating) || 0,
+      totalReviews: parseInt(result?.totalReviews) || 0
     },
     { where: { id: motorcycleId } }
   );
@@ -179,8 +179,8 @@ const updateShopRating = async (shopId) => {
 
   await Shop.update(
     {
-      rating: parseFloat(result.avgRating) || 0,
-      totalReviews: parseInt(result.totalReviews) || 0
+      rating: parseFloat(result?.avgRating) || 0,
+      totalReviews: parseInt(result?.totalReviews) || 0
     },
     { where: { id: shopId } }
   );

@@ -6,7 +6,7 @@ const {
   login,
   verifyOTP,
   resendOTP,
-  getProfile,
+  getProfile
 } = require('../controllers/authController');
 
 // Public routes
@@ -16,6 +16,6 @@ router.post('/verify-otp', verifyOTP);
 router.post('/resend-otp', resendOTP);
 
 // Protected routes
-router.get('/profile', protect, getProfile);
+router.get('/me', protect, getProfile);
 
 module.exports = router;
