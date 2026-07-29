@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { rentalAPI } from '@rental/shared/api';
 
 const Booking = () => {
   const navigate = useNavigate();
@@ -8,125 +7,64 @@ const Booking = () => {
   const { bike, days, totalPrice } = location.state || {};
   const [pickupLocation, setPickupLocation] = useState('');
   const [returnLocation, setReturnLocation] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const locations = ['Thamel', 'Patan', 'Boudha', 'Swoyambhu', 'Airport', 'Lazimpat'];
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!pickupLocation || !returnLocation) {
       alert('Please select both pickup and return locations');
       return;
     }
-
-    setLoading(true);
-    try {
-      const response = await rentalAPI.create({
-        motorcycleId: bike?.id,
-        startDate: new Date().toISOString(),
-        endDate: new Date(Date.now() + days * 86400000).toISOString(),
-        pickupLocation,
-        returnLocation,
-        totalPrice,
-      });
-
-      if (response.success) {
-        navigate('/payment', { state: { rentalId: response.data.id, totalPrice } });
-      }
-    } catch (error) {
-      alert('Booking failed: ' + error.message);
-    } finally {
-      setLoading(false);
-    }
+    alert('Booking successful! (Mock)');
+    navigate('/payment', { state: { totalPrice: totalPrice || 1000 } });
   };
 
   return (
-    <div className="booking-page">
+    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>
       <h2>Book Your Ride</h2>
-      <p className="subtitle">Fill in the details</p>
+      <p style={{ color: '#888' }}>Fill in the details</p>
 
-      <div className="booking-summary">
-        <div className="summary-row">
+      <div style={{ background: '#f5f5f5', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
           <span>Bike</span>
           <strong>{bike?.name || 'Not selected'}</strong>
         </div>
-        <div className="summary-row">
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
           <span>Days</span>
-          <strong>{days || 0} days</strong>
+          <strong>{days || 1} days</strong>
         </div>
-        <div className="summary-row total">
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderTop: '1px solid #ddd', paddingTop: '10px', marginTop: '6px', fontSize: '18px', fontWeight: 'bold' }}>
           <span>Total</span>
-          <strong>{totalPrice ? `Rs ${totalPrice}` : '—'}</strong>
+          <strong style={{ color: '#4CAF50' }}>Rs {totalPrice || 1000}</strong>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="booking-form">
-        <div className="form-group">
-          <label>Pickup Location *</label>
-          <select
-            value={pickupLocation}
-            onChange={(e) => setPickupLocation(e.target.value)}
-            className="input-field"
-            required
-          >
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ fontWeight: '600', display: 'block', marginBottom: '4px' }}>Pickup Location *</label>
+          <select value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} style={{ width: '100%', padding: '12px', border: '1px solid #ddd', borderRadius: '4px' }} required>
             <option value="">Select pickup location</option>
             {locations.map((loc) => (
-              <option key={loc}>{loc}</option>
+              <option key={loc} value={loc}>{loc}</option>
             ))}
           </select>
         </div>
 
-        <div className="form-group">
-          <label>Return Location *</label>
-          <select
-            value={returnLocation}
-            onChange={(e) => setReturnLocation(e.target.value)}
-            className="input-field"
-            required
-          >
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ fontWeight: '600', display: 'block', marginBottom: '4px' }}>Return Location *</label>
+          <select value={returnLocation} onChange={(e) => setReturnLocation(e.target.value)} style={{ width: '100%', padding: '12px', border: '1px solid #ddd', borderRadius: '4px' }} required>
             <option value="">Select return location</option>
             {locations.map((loc) => (
-              <option key={loc}>{loc}</option>
+              <option key={loc} value={loc}>{loc}</option>
             ))}
           </select>
         </div>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? 'Processing...' : 'Proceed to Payment'}
+        <button type="submit" style={{ width: '100%', padding: '12px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', fontSize: '16px', cursor: 'pointer' }}>
+          Proceed to Payment
         </button>
       </form>
-
-      <style>{`
-        .booking-page { padding: 8px 0 20px; }
-        .booking-page h2 { font-size: 24px; font-weight: 700; }
-        .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
-
-        .booking-summary {
-          background: #f5f5f5;
-          border-radius: 12px;
-          padding: 16px;
-          margin-bottom: 20px;
-        }
-        .summary-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 4px 0;
-          font-size: 14px;
-          color: #555;
-        }
-        .summary-row.total {
-          border-top: 1px solid #ddd;
-          padding-top: 10px;
-          margin-top: 6px;
-          font-size: 18px;
-          font-weight: 700;
-        }
-        .summary-row.total strong { color: #4CAF50; }
-
-        .booking-form { display: flex; flex-direction: column; gap: 16px; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-weight: 600; font-size: 14px; color: #333; }
-      `}</style>
     </div>
   );
 };

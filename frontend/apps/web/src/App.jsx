@@ -17,10 +17,16 @@ import ShopProfile from './pages/ShopProfile';
 import AddBike from './pages/AddBike';
 import Notifications from './pages/Notifications';
 import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -40,6 +46,7 @@ function App() {
           <Route path="add-bike" element={<AddBike />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="admin" element={<AdminDashboard />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" />} />

@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authAPI } from '@rental/shared/api';
 
 const AuthContext = createContext();
 
@@ -9,51 +8,19 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    loadUser();
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      setUser({ name: 'Prajal', email: 'prajal@example.com' });
+      setIsAuthenticated(true);
+    }
+    setLoading(false);
   }, []);
 
-  const loadUser = async () => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        const response = await authAPI.getProfile();
-        if (response.success) {
-          setUser(response.data);
-          setIsAuthenticated(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const login = async (email, password) => {
-    try {
-      const response = await authAPI.login(email, password);
-      if (response.success) {
-        return { success: true, userId: response.data.userId };
-      }
-      return { success: false, message: response.message };
-    } catch (error) {
-      return { success: false, message: error.message };
-    }
-  };
-
-  const verifyOTP = async (userId, otp) => {
-    try {
-      const response = await authAPI.verifyOTP(userId, otp);
-      if (response.success) {
-        localStorage.setItem('authToken', response.data.token);
-        setUser(response.data.user);
-        setIsAuthenticated(true);
-        return { success: true };
-      }
-      return { success: false, message: response.message };
-    } catch (error) {
-      return { success: false, message: error.message };
-    }
+    localStorage.setItem('authToken', 'mock-token');
+    setUser({ name: 'Prajal', email });
+    setIsAuthenticated(true);
+    return { success: true };
   };
 
   const logout = () => {
@@ -62,25 +29,15 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
-  const value = {
-    user,
-    loading,
-    isAuthenticated,
-    login,
-    verifyOTP,
-    logout,
-    setUser,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading, isAuthenticated, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
-
-export default AuthContext;

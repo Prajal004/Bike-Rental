@@ -1,51 +1,26 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import './Layout.css';
 
 const Layout = () => {
-  const { user } = useAuth();
   const location = useLocation();
 
-  const navItems = [
-    { path: '/', label: 'Home', icon: '🏠' },
-    { path: '/orders', label: 'Orders', icon: '📋' },
-    { path: '/sos', label: 'SOS', icon: '🆘' },
-    { path: '/profile', label: 'Profile', icon: '👤' },
-  ];
-
   return (
-    <div className="app-layout">
-      <header className="app-header">
-        <Link to="/" className="logo">
-          <span className="logo-icon">🏍️</span>
-          <span className="logo-text">Bike<span>Rental</span></span>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ background: '#4CAF50', padding: '16px', color: 'white' }}>
+        <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '20px' }}>
+          🏍️ Bike Rental
         </Link>
-        <div className="header-actions">
-          <Link to="/notifications" className="icon-btn">
-            🔔
-          </Link>
-          <Link to="/profile" className="avatar-btn">
-            <span className="avatar-small">{user?.fullName?.[0] || 'U'}</span>
-          </Link>
-        </div>
       </header>
 
-      <main className="app-main">
+      <main style={{ flex: 1, padding: '16px' }}>
         <Outlet />
       </main>
 
-      <nav className="bottom-nav">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            <span className="nav-label">{item.label}</span>
-          </Link>
-        ))}
+      <nav style={{ display: 'flex', justifyContent: 'space-around', padding: '12px', borderTop: '1px solid #ddd', background: 'white' }}>
+        <Link to="/" style={{ color: location.pathname === '/' ? '#4CAF50' : '#666', textDecoration: 'none' }}>🏠 Home</Link>
+        <Link to="/orders" style={{ color: location.pathname === '/orders' ? '#4CAF50' : '#666', textDecoration: 'none' }}>📋 Orders</Link>
+        <Link to="/admin" style={{ color: location.pathname === '/admin' ? '#4CAF50' : '#666', textDecoration: 'none' }}>👑 Admin</Link>
+        <Link to="/profile" style={{ color: location.pathname === '/profile' ? '#4CAF50' : '#666', textDecoration: 'none' }}>👤 Profile</Link>
       </nav>
     </div>
   );
