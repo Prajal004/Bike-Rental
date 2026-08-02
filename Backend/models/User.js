@@ -6,97 +6,91 @@ const User = sequelize.define('User', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    primaryKey: true,
   },
-  name: {
+  fullName: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true,
+    field: 'full_name',
   },
   email: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
-    validate: {
-      isEmail: true
-    }
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false
   },
   phone: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
+    unique: true,
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   role: {
-    type: DataTypes.ENUM('customer', 'shop_owner', 'rider', 'admin'),
-    defaultValue: 'customer'
+    type: DataTypes.STRING,
+    defaultValue: 'customer',
   },
   isVerified: {
     type: DataTypes.BOOLEAN,
-    defaultValue: false
+    defaultValue: false,
+    field: 'is_verified',
   },
   isActive: {
     type: DataTypes.BOOLEAN,
-    defaultValue: true
+    defaultValue: true,
+    field: 'is_active',
   },
   referralCode: {
     type: DataTypes.STRING,
-    unique: true
+    field: 'referral_code',
   },
   referredBy: {
     type: DataTypes.UUID,
-    allowNull: true
+    field: 'referred_by',
   },
   otpCode: {
     type: DataTypes.STRING,
-    allowNull: true
+    field: 'otp_code',
   },
   otpExpiresAt: {
     type: DataTypes.DATE,
-    allowNull: true
-  },
-  resetPasswordToken: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  resetPasswordExpire: {
-    type: DataTypes.DATE,
-    allowNull: true
-  },
-  lastLogin: {
-    type: DataTypes.DATE,
-    allowNull: true
+    field: 'otp_expires_at',
   },
   walletBalance: {
     type: DataTypes.FLOAT,
-    defaultValue: 0
-  }
+    defaultValue: 0,
+    field: 'wallet_balance',
+  },
 }, {
   tableName: 'users',
   timestamps: true,
-  underscored: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
   hooks: {
     beforeCreate: async (user) => {
       if (user.password) {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
+        console.log('🔐 Password hashed for new user');
       }
     },
     beforeUpdate: async (user) => {
       if (user.changed('password')) {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
+        console.log('🔐 Password hashed for update');
       }
     }
   }
 });
 
-// ✅ Compare Password Method
-User.prototype.comparePassword = async function(password) {
-  return await bcrypt.compare(password, this.password);
+// ✅ Compare password method
+User.prototype.comparePassword = async function(enteredPassword) {
+  console.log('🔐 Comparing password...');
+  console.log('📝 Entered:', enteredPassword);
+  console.log('📝 Stored hash:', this.password);
+  const result = await bcrypt.compare(enteredPassword, this.password);
+  console.log('🔑 Result:', result);
+  return result;
 };
 
 module.exports = User;

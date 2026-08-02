@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AdminProfile = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
 
+  useEffect(() => {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      try {
+        const parsed = JSON.parse(userData);
+        console.log('👑 Admin Profile Data:', parsed);
+        setUser(parsed);
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+  }, []);
+
+  const isAdmin = user?.role === 'admin';
+  const adminName = user?.fullName || user?.name || 'Admin';
+  const adminEmail = user?.email || 'admin@bikerental.com';
+  const adminPhone = user?.phone || '98XXXXXXXX';
+
   const [profile, setProfile] = useState({
-    name: 'Prajal Shah',
-    email: 'admin@bikerental.com',
-    phone: '98XXXXXXXX',
+    name: adminName,
+    email: adminEmail,
+    phone: adminPhone,
     role: 'Super Admin',
     joined: 'Jan 2026',
   });
@@ -111,7 +130,7 @@ const AdminProfile = () => {
         ) : (
           <>
             <h3>{profile.name}</h3>
-            <p style={{ color: '#9C27B0', fontWeight: 'bold' }}>{profile.role}</p>
+            <p style={{ color: '#9C27B0', fontWeight: 'bold', fontSize: '16px' }}>👑 Super Admin</p>
             <p style={{ color: '#888', fontSize: '13px' }}>Member since {profile.joined}</p>
           </>
         )}
@@ -121,15 +140,15 @@ const AdminProfile = () => {
         <div style={{ marginTop: '20px', background: 'white', borderRadius: '8px', border: '1px solid #eee', padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee' }}>
             <span style={{ color: '#888' }}>📧 Email</span>
-            <span>{profile.email}</span>
+            <span style={{ fontWeight: '500' }}>{profile.email}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee' }}>
             <span style={{ color: '#888' }}>📞 Phone</span>
-            <span>{profile.phone}</span>
+            <span style={{ fontWeight: '500' }}>{profile.phone}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
             <span style={{ color: '#888' }}>👑 Role</span>
-            <span style={{ color: '#9C27B0', fontWeight: 'bold' }}>{profile.role}</span>
+            <span style={{ color: '#9C27B0', fontWeight: 'bold' }}>Super Admin</span>
           </div>
         </div>
       )}

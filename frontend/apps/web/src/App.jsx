@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import OTP from './pages/OTP';
+import ForgotPassword from './pages/ForgotPassword';
 import BikeDetail from './pages/BikeDetail';
 import Booking from './pages/Booking';
 import Payment from './pages/Payment';
@@ -31,6 +32,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/otp" element={<OTP />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />

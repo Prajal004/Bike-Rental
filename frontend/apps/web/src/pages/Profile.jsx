@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showUploadDocs, setShowUploadDocs] = useState(false);
 
+  useEffect(() => {
+    // Load user from localStorage
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      try {
+        const parsed = JSON.parse(userData);
+        console.log('👤 User data from storage:', parsed);
+        setUser(parsed);
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+  }, []);
+
   const [profile, setProfile] = useState({
-    name: 'Prajal Shah',
-    email: 'prajal@example.com',
-    phone: '98XXXXXXXX',
+    name: user?.fullName || user?.name || 'User',
+    email: user?.email || 'email@example.com',
+    phone: user?.phone || '98XXXXXXXX',
   });
 
   const [editData, setEditData] = useState({
@@ -26,6 +41,24 @@ const Profile = () => {
   });
 
   const [documents, setDocuments] = useState({ license: null, citizenship: null });
+
+  // ✅ Role-based display
+  const userRole = user?.role || 'customer';
+  const isAdmin = userRole === 'admin';
+  const isShopOwner = userRole === 'shop_owner';
+  const isCustomer = userRole === 'customer';
+
+  const getRoleDisplay = () => {
+    if (isAdmin) return '👑 Super Admin';
+    if (isShopOwner) return '🏪 Shop Owner';
+    return '👤 Customer';
+  };
+
+  const getRoleColor = () => {
+    if (isAdmin) return '#9C27B0';
+    if (isShopOwner) return '#FF9800';
+    return '#4CAF50';
+  };
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
@@ -93,7 +126,7 @@ const Profile = () => {
       <h2>👤 My Profile</h2>
 
       <div style={{ textAlign: 'center', padding: '20px', background: 'white', borderRadius: '8px', border: '1px solid #eee' }}>
-        <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: '#4CAF50', color: 'white', fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+        <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: getRoleColor(), color: 'white', fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
           {profile.name.charAt(0)}
         </div>
 
@@ -119,7 +152,7 @@ const Profile = () => {
         ) : (
           <>
             <h3>{profile.name}</h3>
-            <p style={{ color: '#888' }}>Customer</p>
+            <p style={{ color: getRoleColor(), fontWeight: 'bold', fontSize: '16px' }}>{getRoleDisplay()}</p>
             <p style={{ color: '#4CAF50', fontSize: '13px' }}>✅ Verified</p>
           </>
         )}
@@ -134,6 +167,10 @@ const Profile = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
             <span style={{ color: '#888' }}>📞 Phone</span>
             <span>{profile.phone}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
+            <span style={{ color: '#888' }}>👑 Role</span>
+            <span style={{ color: getRoleColor(), fontWeight: 'bold' }}>{getRoleDisplay()}</span>
           </div>
         </div>
       )}
@@ -172,6 +209,12 @@ const Profile = () => {
             {documents.citizenship && <span style={{ color: 'green', marginLeft: '8px' }}>✅ {documents.citizenship}</span>}
           </div>
         </div>
+      )}
+
+      {isAdmin && (
+        <button onClick={() => navigate('/admin')} style={{ width: '100%', padding: '10px', marginTop: '10px', background: '#9C27B0', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          👑 Go to Admin Dashboard
+        </button>
       )}
 
       <button onClick={handleLogout} style={{ width: '100%', padding: '10px', marginTop: '10px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
