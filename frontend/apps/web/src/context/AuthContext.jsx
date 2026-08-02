@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authAPI } from '../api';
+import { authAPI } from '../api/auth';
 
 const AuthContext = createContext();
 
@@ -8,44 +8,65 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => { loadUser(); }, []);
+  useEffect(() => {
+    loadUser();
+  }, []);
 
   const loadUser = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      if (token) {
-        const response = await authAPI.getProfile();
-        if (response.success) {
-          setUser(response.data);
-          setIsAuthenticated(true);
-        }
+      const userData = localStorage.getItem('userData');
+      if (token && userData) {
+        setUser(JSON.parse(userData));
+        setIsAuthenticated(true);
       }
-    } catch (error) { console.error(error); } finally { setLoading(false); }
+    } catch (error) {
+      console.error('Error loading user:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const login = async (email, password) => {
     try {
       const response = await authAPI.login(email, password);
-      if (response.success) return { success: true, userId: response.data.userId };
+      if (response.success) {
+        return { success: true, userId: response.userId };
+      }
       return { success: false, message: response.message };
-    } catch (error) { return { success: false, message: error.message }; }
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   };
 
   const verifyOTP = async (userId, otp) => {
     try {
       const response = await authAPI.verifyOTP(userId, otp);
       if (response.success) {
-        localStorage.setItem('authToken', response.data.token);
-        setUser(response.data.user);
+        // ✅ Store user with role
+        const userData = {
+          id: response.user.id,
+          name: response.user.fullName || response.user.name,
+          email: response.user.email,
+          phone: response.user.phone,
+          role: response.user.role || 'customer', // ✅ Role saved!
+          walletBalance: response.user.walletBalance || 0,
+        };
+        localStorage.setItem('authToken', response.token);
+        localStorage.setItem('userData', JSON.stringify(userData));
+        setUser(userData);
         setIsAuthenticated(true);
         return { success: true };
       }
       return { success: false, message: response.message };
-    } catch (error) { return { success: false, message: error.message }; }
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   };
 
   const logout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
     setUser(null);
     setIsAuthenticated(false);
   };
