@@ -5,82 +5,31 @@ const Payment = sequelize.define('Payment', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
-  },
-  paymentId: {
-    type: DataTypes.STRING,
-    unique: true,
-    allowNull: false
-  },
-  rentalId: {
-    type: DataTypes.UUID,
-    allowNull: false
-  },
-  userId: {
-    type: DataTypes.UUID,
-    allowNull: false
+    primaryKey: true,
   },
   amount: {
     type: DataTypes.FLOAT,
-    allowNull: false
-  },
-  originalAmount: {
-    type: DataTypes.FLOAT,
-    allowNull: false
-  },
-  discountApplied: {
-    type: DataTypes.FLOAT,
-    defaultValue: 0
-  },
-  walletUsed: {
-    type: DataTypes.FLOAT,
-    defaultValue: 0
+    allowNull: false,
   },
   method: {
-    type: DataTypes.ENUM('esewa', 'khalti', 'fonepay', 'cash'),
-    allowNull: false
-  },
-  transactionId: {
     type: DataTypes.STRING,
-    allowNull: true
-  },
-  transactionData: {
-    type: DataTypes.JSONB,
-    allowNull: true
+    allowNull: false,
   },
   status: {
-    type: DataTypes.ENUM('pending', 'success', 'failed'),
-    defaultValue: 'pending'
+    type: DataTypes.STRING,
+    defaultValue: 'pending',
   },
-  paidAt: {
-    type: DataTypes.DATE,
-    allowNull: true
+  rentalId: {
+    type: DataTypes.UUID,
+    field: 'rental_id',
   },
-  refundedAt: {
-    type: DataTypes.DATE,
-    allowNull: true
+  userId: {
+    type: DataTypes.UUID,
+    field: 'user_id',
   },
-  refundAmount: {
-    type: DataTypes.FLOAT,
-    defaultValue: 0
-  }
 }, {
   tableName: 'payments',
   timestamps: true,
-  underscored: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
 });
-
-Payment.associate = function(models) {
-  Payment.belongsTo(models.Booking, {
-    foreignKey: 'rentalId',
-    as: 'booking'
-  });
-  Payment.belongsTo(models.User, {
-    foreignKey: 'userId',
-    as: 'user'
-  });
-};
 
 module.exports = Payment;

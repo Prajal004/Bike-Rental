@@ -1,65 +1,32 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const sosAlertSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+const SosAlert = sequelize.define('SosAlert', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
   },
-  rental: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Rental',
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'user_id',
   },
   location: {
-    lat: {
-      type: Number,
-      required: true,
-    },
-    lng: {
-      type: Number,
-      required: true,
-    },
-    address: String,
-    googleMapsLink: String,
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
+    type: DataTypes.JSONB,
+    defaultValue: {},
   },
   status: {
-    type: String,
-    enum: ['active', 'resolved', 'false_alarm'],
-    default: 'active',
+    type: DataTypes.STRING,
+    defaultValue: 'active',
   },
-  notifiedContacts: [{
-    name: String,
-    phone: String,
-    relation: String,
-    notifiedAt: Date,
-  }],
-  adminNotified: {
-    type: Boolean,
-    default: false,
+  timestamp: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
   },
-  adminNotifiedAt: Date,
-  resolvedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
-  resolutionNotes: String,
-  resolvedAt: Date,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+}, {
+  tableName: 'sos_alerts',
+  timestamps: true,
 });
 
-// Generate Google Maps link before saving
-sosAlertSchema.pre('save', function (next) {
-  if (this.location.lat && this.location.lng) {
-    this.location.googleMapsLink = `https://maps.google.com/?q=${this.location.lat},${this.location.lng}`;
-  }
-  next();
-});
-
-module.exports = mongoose.model('SosAlert', sosAlertSchema);
+module.exports = SosAlert;

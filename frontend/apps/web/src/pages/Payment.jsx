@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import PaymentConfirmation from './PaymentConfirmation';
 
 const Payment = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { totalPrice } = location.state || { totalPrice: 1000 };
   const [method, setMethod] = useState('esewa');
+  const [paid, setPaid] = useState(false);
 
   const methods = [
     { id: 'esewa', label: 'eSewa', icon: '💰' },
@@ -15,13 +17,16 @@ const Payment = () => {
   ];
 
   const handlePayment = () => {
-    alert(`Payment of Rs ${totalPrice} successful via ${method}! (Mock)`);
-    navigate('/orders');
+    setPaid(true);
   };
+
+  if (paid) {
+    return <PaymentConfirmation orderId={`BK-${Date.now()}`} amount={totalPrice} />;
+  }
 
   return (
     <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>
-      <h2>Payment</h2>
+      <h2>💳 Payment</h2>
       <p style={{ color: '#888' }}>Choose payment method</p>
 
       <div style={{ background: '#f5f5f5', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
@@ -33,11 +38,20 @@ const Payment = () => {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
         {methods.map((m) => (
-          <div key={m.id} onClick={() => setMethod(m.id)} style={{
-            display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-            border: method === m.id ? '2px solid #4CAF50' : '2px solid #eee',
-            borderRadius: '8px', cursor: 'pointer', background: method === m.id ? '#E8F5E9' : 'white'
-          }}>
+          <div
+            key={m.id}
+            onClick={() => setMethod(m.id)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 16px',
+              border: method === m.id ? '2px solid #4CAF50' : '2px solid #eee',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              background: method === m.id ? '#E8F5E9' : 'white',
+            }}
+          >
             <span style={{ fontSize: '24px' }}>{m.icon}</span>
             <div style={{ flex: 1 }}>
               <h4 style={{ margin: 0 }}>{m.label}</h4>
@@ -48,7 +62,20 @@ const Payment = () => {
         ))}
       </div>
 
-      <button onClick={handlePayment} style={{ width: '100%', padding: '14px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+      <button
+        onClick={handlePayment}
+        style={{
+          width: '100%',
+          padding: '14px',
+          background: '#4CAF50',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+        }}
+      >
         Pay Rs {totalPrice}
       </button>
       <p style={{ textAlign: 'center', color: '#888', marginTop: '12px' }}>🔒 Your payment is secure</p>

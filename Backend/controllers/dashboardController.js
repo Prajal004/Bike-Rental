@@ -1,58 +1,67 @@
+const User = require('../models/User');
 const Shop = require('../models/Shop');
 const Motorcycle = require('../models/Motorcycle');
-const Booking = require('../models/Booking');
-const Payment = require('../models/Payment');
-const User = require('../models/User');
 
-// Get Shop Owner Dashboard
-exports.getShopDashboard = async (req, res) => {
+// ✅ Try to import models, use fallback if missing
+let Rental, Payment, SosAlert, Referral;
+
+try { Rental = require('../models/Rental'); } catch(e) { Rental = { count: async () => 0 }; }
+try { Payment = require('../models/Payment'); } catch(e) { Payment = { sum: async () => 0 }; }
+try { SosAlert = require('../models/SosAlert'); } catch(e) { SosAlert = { count: async () => 0 }; }
+try { Referral = require('../models/Referral'); } catch(e) { Referral = { count: async () => 0 }; }
+
+const getStats = async (req, res) => {
   try {
-    // Find shop by user id
-    const shop = await Shop.findOne({
-      where: { userId: req.user.id }
+    console.log('📊 Fetching dashboard stats...');
+
+    const totalCustomers = await User.count({ where: { role: 'customer' } });
+    console.log('👥 Customers:', totalCustomers);
+
+    const totalShops = await Shop.count();
+    console.log('🏪 Shops:', totalShops);
+
+    const totalBikes = await Motorcycle.count();
+    console.log('🏍️ Bikes:', totalBikes);
+
+    const pendingVerifications = await Motorcycle.count({ 
+      where: { is_verified: false } 
     });
+    console.log('⏳ Pending:', pendingVerifications);
 
-    if (!shop) {
-      return res.status(404).json({
-        success: false,
-        message: 'Shop not found for this user'
-      });
-    }
+    let totalOrders = 0;
+    try { totalOrders = await Rental.count(); } catch(e) { totalOrders = 0; }
+    console.log('📋 Orders:', totalOrders);
 
-    const shopId = shop.id;
-    
-    const [totalBikes, totalBookings, totalRevenue, pendingBookings] = await Promise.all([
-      Motorcycle.count({ where: { shopId, isActive: true } }),
-      Booking.count({ where: { shopId } }),
-      Payment.sum('amount', { where: { shopId, status: 'success' } }),
-      Booking.count({ where: { shopId, status: 'pending' } })
-    ]);
+    let totalRevenue = 0;
+    try {
+      const result = await Payment.sum('amount', { where: { status: 'success' } });
+      totalRevenue = result || 0;
+    } catch(e) { totalRevenue = 0; }
+    console.log('💰 Revenue:', totalRevenue);
 
-    const recentBookings = await Booking.findAll({
-      where: { shopId },
-      limit: 5,
-      order: [['createdAt', 'DESC']],
-      include: [{ model: User, attributes: ['name', 'email'] }]
-    });
+    let activeSOS = 0;
+    try { activeSOS = await SosAlert.count({ where: { status: 'active' } }); } catch(e) { activeSOS = 0; }
+    console.log('🆘 SOS:', activeSOS);
 
-    res.json({
+    let totalReferrals = 0;
+    try { totalReferrals = await Referral.count(); } catch(e) { totalReferrals = 0; }
+    console.log('🔗 Referrals:', totalReferrals);
+
+    res.status(200).json({
       success: true,
       data: {
-        shop: {
-          id: shop.id,
-          name: shop.name,
-          address: shop.address,
-          status: shop.status
-        },
-        totalBikes,
-        totalBookings,
+        totalCustomers: totalCustomers || 0,
+        totalShops: totalShops || 0,
+        totalBikes: totalBikes || 0,
+        pendingVerifications: pendingVerifications || 0,
+        totalOrders: totalOrders || 0,
         totalRevenue: totalRevenue || 0,
-        pendingBookings,
-        recentBookings
+        activeSOS: activeSOS || 0,
+        totalReferrals: totalReferrals || 0,
       }
     });
   } catch (error) {
-    console.error('Shop Dashboard Error:', error);
+    console.error('❌ Dashboard Stats Error:', error.message);
     res.status(500).json({
       success: false,
       message: error.message || 'Server error'
@@ -60,71 +69,4 @@ exports.getShopDashboard = async (req, res) => {
   }
 };
 
-// Get Customer Dashboard
-exports.getCustomerDashboard = async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    const [totalBookings, activeBookings, completedBookings] = await Promise.all([
-      Booking.count({ where: { customerId: userId } }),
-      Booking.count({ where: { customerId: userId, status: 'active' } }),
-      Booking.count({ where: { customerId: userId, status: 'completed' } })
-    ]);
-
-    const recentBookings = await Booking.findAll({
-      where: { customerId: userId },
-      limit: 5,
-      order: [['createdAt', 'DESC']],
-      include: [
-        { model: Motorcycle, attributes: ['name', 'brand', 'images'] },
-        { model: Shop, attributes: ['name', 'address'] }
-      ]
-    });
-
-    res.json({
-      success: true,
-      data: {
-        totalBookings,
-        activeBookings,
-        completedBookings,
-        recentBookings
-      }
-    });
-  } catch (error) {
-    console.error('Customer Dashboard Error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Server error'
-    });
-  }
-};
-
-// Get Admin Dashboard
-exports.getAdminDashboard = async (req, res) => {
-  try {
-    const [totalUsers, totalShops, totalBikes, totalBookings, totalRevenue] = await Promise.all([
-      User.count(),
-      Shop.count(),
-      Motorcycle.count(),
-      Booking.count(),
-      Payment.sum('amount', { where: { status: 'success' } })
-    ]);
-
-    res.json({
-      success: true,
-      data: {
-        totalUsers,
-        totalShops,
-        totalBikes,
-        totalBookings,
-        totalRevenue: totalRevenue || 0
-      }
-    });
-  } catch (error) {
-    console.error('Admin Dashboard Error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Server error'
-    });
-  }
-};
+module.exports = { getStats };

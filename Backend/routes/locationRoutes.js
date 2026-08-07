@@ -1,21 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
 const {
-  addLocation,
   getLocations,
+  getNearbyLocations,
+  searchLocations,
+  validateLocation,
   getLocationById,
-  updateLocation,
-  deleteLocation
 } = require('../controllers/locationController');
 
-// Public routes
+// ✅ Public routes (specific routes pehle)
 router.get('/', getLocations);
-router.get('/:id', getLocationById);
-
-// Protected routes
-router.post('/', protect, addLocation);
-router.put('/:id', protect, updateLocation);
-router.delete('/:id', protect, deleteLocation);
+router.get('/nearby', getNearbyLocations);
+router.get('/search', searchLocations);  // ✅ Search pehle
+router.post('/validate', validateLocation);
+router.get('/:id', getLocationById);     // ✅ :id pachi
 
 module.exports = router;

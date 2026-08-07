@@ -1,225 +1,116 @@
 const Motorcycle = require('../models/Motorcycle');
-const Shop = require('../models/Shop');
 
-exports.addMotorcycle = async (req, res) => {
+// @desc    Get all motorcycles
+const getMotorcycles = async (req, res) => {
   try {
-    const {
-      shopId,
-      name,
-      brand,
-      model,
-      year,
-      color,
-      pricePerHour,
-      pricePerDay,
-      securityDeposit,
-      images,
-      features,
-      status
-    } = req.body;
-
-    if (!shopId || !name || !brand || !model || !year || !pricePerHour || !pricePerDay) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields: shopId, name, brand, model, year, pricePerHour, pricePerDay'
-      });
-    }
-
-    const shop = await Shop.findByPk(shopId);
-    if (!shop) {
-      return res.status(404).json({
-        success: false,
-        message: 'Shop not found'
-      });
-    }
-
-    if (shop.userId !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not own this shop'
-      });
-    }
-
-    const motorcycle = await Motorcycle.create({
-      shopId,
-      name,
-      brand,
-      model,
-      year,
-      color: color || 'Black',
-      pricePerHour,
-      pricePerDay,
-      securityDeposit: securityDeposit || 0,
-      images: images || [],
-      features: features || [],
-      status: status || 'available'
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Motorcycle added successfully',
-      data: motorcycle
-    });
+    const motorcycles = await Motorcycle.findAll();
+    res.json({ success: true, motorcycles });
   } catch (error) {
-    console.error('Add Motorcycle Error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Server error'
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-exports.getMotorcycles = async (req, res) => {
+// @desc    Get featured motorcycles
+const getFeaturedMotorcycles = async (req, res) => {
   try {
+    const motorcycles = await Motorcycle.findAll({ where: { featured: true } });
+    res.json({ success: true, motorcycles });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get motorcycle by ID
+const getMotorcycleById = async (req, res) => {
+  try {
+    const motorcycle = await Motorcycle.findByPk(req.params.id);
+    if (!motorcycle) {
+      return res.status(404).json({ success: false, message: 'Motorcycle not found' });
+    }
+    res.json({ success: true, motorcycle });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get nearby motorcycles
+const getNearbyMotorcycles = async (req, res) => {
+  try {
+    const { lat, lng, radius = 10 } = req.query;
+    const motorcycles = await Motorcycle.findAll();
+    res.json({ success: true, motorcycles });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Search motorcycles
+const searchMotorcycles = async (req, res) => {
+  try {
+    const { q } = req.query;
+    const { Op } = require('sequelize');
     const motorcycles = await Motorcycle.findAll({
-      where: { isActive: true },
-      include: [
-        {
-          model: Shop,
-          as: 'shop',  // ✅ 'as' keyword थप्नुहोस्
-          attributes: ['id', 'name', 'address', 'phone', 'email']
-        }
-      ]
+      where: {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${q}%` } },
+          { brand: { [Op.iLike]: `%${q}%` } },
+        ],
+      },
     });
-
-    res.json({
-      success: true,
-      data: motorcycles
-    });
+    res.json({ success: true, motorcycles });
   } catch (error) {
-    console.error('Get Motorcycles Error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Server error'
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-exports.getMotorcycleById = async (req, res) => {
+// @desc    Add motorcycle
+const addMotorcycle = async (req, res) => {
   try {
-    const motorcycle = await Motorcycle.findByPk(req.params.id, {
-      include: [
-        {
-          model: Shop,
-          as: 'shop',  // ✅ 'as' keyword थप्नुहोस्
-          attributes: ['id', 'name', 'address', 'phone', 'email']
-        }
-      ]
+    const motorcycle = await Motorcycle.create({
+      ...req.body,
+      userId: req.user.id,
     });
-
-    if (!motorcycle) {
-      return res.status(404).json({
-        success: false,
-        message: 'Motorcycle not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      data: motorcycle
-    });
+    res.status(201).json({ success: true, motorcycle });
   } catch (error) {
-    console.error('Get Motorcycle Error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Server error'
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-exports.updateMotorcycle = async (req, res) => {
+// @desc    Update motorcycle
+const updateMotorcycle = async (req, res) => {
   try {
-    const { id } = req.params;
-    const {
-      name,
-      brand,
-      model,
-      year,
-      color,
-      pricePerHour,
-      pricePerDay,
-      securityDeposit,
-      features,
-      status
-    } = req.body;
-
-    const motorcycle = await Motorcycle.findByPk(id);
-
+    const motorcycle = await Motorcycle.findByPk(req.params.id);
     if (!motorcycle) {
-      return res.status(404).json({
-        success: false,
-        message: 'Motorcycle not found'
-      });
+      return res.status(404).json({ success: false, message: 'Motorcycle not found' });
     }
-
-    const shop = await Shop.findByPk(motorcycle.shopId);
-    if (shop.userId !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not own this motorcycle'
-      });
-    }
-
-    await motorcycle.update({
-      name,
-      brand,
-      model,
-      year,
-      color,
-      pricePerHour,
-      pricePerDay,
-      securityDeposit,
-      features,
-      status
-    });
-
-    res.json({
-      success: true,
-      message: 'Motorcycle updated successfully',
-      data: motorcycle
-    });
+    await motorcycle.update(req.body);
+    res.json({ success: true, motorcycle });
   } catch (error) {
-    console.error('Update Motorcycle Error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Server error'
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-exports.deleteMotorcycle = async (req, res) => {
+// @desc    Delete motorcycle
+const deleteMotorcycle = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const motorcycle = await Motorcycle.findByPk(id);
-
+    const motorcycle = await Motorcycle.findByPk(req.params.id);
     if (!motorcycle) {
-      return res.status(404).json({
-        success: false,
-        message: 'Motorcycle not found'
-      });
+      return res.status(404).json({ success: false, message: 'Motorcycle not found' });
     }
-
-    const shop = await Shop.findByPk(motorcycle.shopId);
-    if (shop.userId !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not own this motorcycle'
-      });
-    }
-
-    motorcycle.isActive = false;
-    await motorcycle.save();
-
-    res.json({
-      success: true,
-      message: 'Motorcycle deleted successfully'
-    });
+    await motorcycle.destroy();
+    res.json({ success: true, message: 'Motorcycle deleted' });
   } catch (error) {
-    console.error('Delete Motorcycle Error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Server error'
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
+};
+
+module.exports = {
+  getMotorcycles,
+  getFeaturedMotorcycles,
+  getMotorcycleById,
+  getNearbyMotorcycles,
+  searchMotorcycles,
+  addMotorcycle,
+  updateMotorcycle,
+  deleteMotorcycle,
 };

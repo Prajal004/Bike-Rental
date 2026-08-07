@@ -1,44 +1,33 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const referralSchema = new mongoose.Schema({
-  referrer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+const Referral = sequelize.define('Referral', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
   },
-  referee: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+  referrerId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'referrer_id',
   },
-  referralCode: {
-    type: String,
-    required: true,
+  refereeId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'referee_id',
+  },
+  code: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   status: {
-    type: String,
-    enum: ['pending', 'completed', 'expired'],
-    default: 'pending',
+    type: DataTypes.STRING,
+    defaultValue: 'pending',
   },
-  referrerBonus: {
-    type: Number,
-    default: 50, // Rs 50 for referrer
-  },
-  refereeDiscount: {
-    type: Number,
-    default: 100, // Rs 100 discount for referee
-  },
-  completedAt: {
-    type: Date,
-  },
-  rental: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Rental',
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+}, {
+  tableName: 'referrals',
+  timestamps: true,
 });
 
-module.exports = mongoose.model('Referral', referralSchema);
+module.exports = Referral;

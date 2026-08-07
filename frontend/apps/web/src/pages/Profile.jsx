@@ -9,18 +9,32 @@ const Profile = () => {
   const [showUploadDocs, setShowUploadDocs] = useState(false);
 
   useEffect(() => {
-    // Load user from localStorage
     const userData = localStorage.getItem('userData');
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
-        console.log('👤 User data from storage:', parsed);
         setUser(parsed);
       } catch (e) {
         console.error('Error parsing user data:', e);
       }
     }
   }, []);
+
+  const userRole = user?.role || 'customer';
+  const isAdmin = userRole === 'admin';
+  const isShopOwner = userRole === 'shop_owner';
+
+  const getRoleDisplay = () => {
+    if (isAdmin) return '👑 Super Admin';
+    if (isShopOwner) return '🏪 Shop Owner';
+    return '👤 Customer';
+  };
+
+  const getRoleColor = () => {
+    if (isAdmin) return '#9C27B0';
+    if (isShopOwner) return '#FF9800';
+    return '#4CAF50';
+  };
 
   const [profile, setProfile] = useState({
     name: user?.fullName || user?.name || 'User',
@@ -41,24 +55,6 @@ const Profile = () => {
   });
 
   const [documents, setDocuments] = useState({ license: null, citizenship: null });
-
-  // ✅ Role-based display
-  const userRole = user?.role || 'customer';
-  const isAdmin = userRole === 'admin';
-  const isShopOwner = userRole === 'shop_owner';
-  const isCustomer = userRole === 'customer';
-
-  const getRoleDisplay = () => {
-    if (isAdmin) return '👑 Super Admin';
-    if (isShopOwner) return '🏪 Shop Owner';
-    return '👤 Customer';
-  };
-
-  const getRoleColor = () => {
-    if (isAdmin) return '#9C27B0';
-    if (isShopOwner) return '#FF9800';
-    return '#4CAF50';
-  };
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
@@ -200,7 +196,7 @@ const Profile = () => {
         <div style={{ marginTop: '10px', padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
           <div style={{ marginBottom: '10px' }}>
             <label style={{ display: 'block', marginBottom: '4px' }}>Driving License</label>
-            <button onClick={() => handleUploadDocument('license')} style={{ padding: '8px 16px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>📎 Choose File</button>
+            <button onClick={() => handleUploadDocument('license')} style={{ padding: '8px 16px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>�� Choose File</button>
             {documents.license && <span style={{ color: 'green', marginLeft: '8px' }}>✅ {documents.license}</span>}
           </div>
           <div>

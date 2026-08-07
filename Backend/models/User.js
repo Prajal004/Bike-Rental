@@ -64,33 +64,25 @@ const User = sequelize.define('User', {
   },
 }, {
   tableName: 'users',
-  timestamps: true,
+  timestamps: true,  // ✅ Sequelize auto handles createdAt/updatedAt
   hooks: {
     beforeCreate: async (user) => {
       if (user.password) {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
-        console.log('🔐 Password hashed for new user');
       }
     },
     beforeUpdate: async (user) => {
       if (user.changed('password')) {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
-        console.log('🔐 Password hashed for update');
       }
     }
   }
 });
 
-// ✅ Compare password method
 User.prototype.comparePassword = async function(enteredPassword) {
-  console.log('🔐 Comparing password...');
-  console.log('📝 Entered:', enteredPassword);
-  console.log('📝 Stored hash:', this.password);
-  const result = await bcrypt.compare(enteredPassword, this.password);
-  console.log('🔑 Result:', result);
-  return result;
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
 module.exports = User;

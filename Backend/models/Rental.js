@@ -1,76 +1,55 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const rentalSchema = new mongoose.Schema({
+const Rental = sequelize.define('Rental', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
   rentalId: {
-    type: String,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    required: true,
+    field: 'rental_id',
   },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'user_id',
   },
-  motorcycle: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Motorcycle',
-    required: true,
-  },
-  pickupLocation: {
-    address: String,
-    coordinates: [Number],
-  },
-  returnLocation: {
-    address: String,
-    coordinates: [Number],
+  motorcycleId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'motorcycle_id',
   },
   startDate: {
-    type: Date,
-    required: true,
+    type: DataTypes.DATE,
+    allowNull: false,
+    field: 'start_date',
   },
   endDate: {
-    type: Date,
-    required: true,
-  },
-  duration: {
-    type: Number,
-    required: true,
-  },
-  basePrice: {
-    type: Number,
-    required: true,
-  },
-  deliveryFee: {
-    type: Number,
-    default: 0,
-  },
-  securityDeposit: {
-    type: Number,
-    default: 1000,
+    type: DataTypes.DATE,
+    allowNull: false,
+    field: 'end_date',
   },
   totalPrice: {
-    type: Number,
-    required: true,
-  },
-  paymentMethod: {
-    type: String,
-    enum: ['esewa', 'khalti', 'fonepay', 'cash'],
-    required: true,
-  },
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'paid', 'failed'],
-    default: 'pending',
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    field: 'total_price',
   },
   status: {
-    type: String,
-    enum: ['pending', 'confirmed', 'ongoing', 'completed', 'cancelled'],
-    default: 'pending',
+    type: DataTypes.STRING,
+    defaultValue: 'pending',
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  paymentStatus: {
+    type: DataTypes.STRING,
+    defaultValue: 'pending',
+    field: 'payment_status',
   },
+}, {
+  tableName: 'rentals',
+  timestamps: true,
 });
 
-module.exports = mongoose.model('Rental', rentalSchema);
+module.exports = Rental;

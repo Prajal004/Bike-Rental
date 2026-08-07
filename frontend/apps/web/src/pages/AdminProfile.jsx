@@ -12,7 +12,6 @@ const AdminProfile = () => {
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
-        console.log('👑 Admin Profile Data:', parsed);
         setUser(parsed);
       } catch (e) {
         console.error('Error parsing user data:', e);

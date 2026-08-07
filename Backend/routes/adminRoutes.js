@@ -1,15 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const adminController = require('../controllers/adminController');
+const { getStats } = require('../controllers/dashboardController');
 const { protect } = require('../middleware/authMiddleware');
-const { isAdmin } = require('../middleware/roleMiddleware');
+const { authorize } = require('../middleware/roleMiddleware');
 
-router.use(protect, isAdmin);
-
-router.get('/users', adminController.getAllUsers);
-router.get('/shops', adminController.getAllShops);
-router.put('/shops/:id/status', adminController.updateShopStatus);
-router.get('/bookings', adminController.getAllBookings);
-router.get('/stats', adminController.getPlatformStats);
+router.get('/stats', protect, authorize('admin'), getStats);
 
 module.exports = router;
