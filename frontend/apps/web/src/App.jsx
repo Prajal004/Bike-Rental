@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import './styles/global.css';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -11,7 +10,7 @@ import BikeDetail from './pages/BikeDetail';
 import Booking from './pages/Booking';
 import Payment from './pages/Payment';
 import OrderHistory from './pages/OrderHistory';
-import Profile from './pages/Profile';
+import Profile from './pages/Profile';  // ✅ Import Profile
 import SOS from './pages/SOS';
 import Referral from './pages/Referral';
 import ShopRegistration from './pages/ShopRegistration';
@@ -23,7 +22,12 @@ import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -36,7 +40,7 @@ function App() {
           <Route path="booking" element={<Booking />} />
           <Route path="payment" element={<Payment />} />
           <Route path="orders" element={<OrderHistory />} />
-          <Route path="profile" element={<Profile />} />
+          <Route path="profile" element={<Profile />} />  {/* ✅ Profile Route */}
           <Route path="sos" element={<SOS />} />
           <Route path="referral" element={<Referral />} />
           <Route path="shop-register" element={<ShopRegistration />} />
