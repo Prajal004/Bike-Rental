@@ -29,8 +29,11 @@ const Login = () => {
 
   return (
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
-      <h2>Login</h2>
+      <h2>🔐 Admin Login</h2>
+      <p style={{ color: '#888', marginBottom: '16px' }}>Login to manage the platform</p>
+
       {error && <div style={{ padding: '10px', background: '#fee2e2', color: '#dc2626', borderRadius: '4px', marginBottom: '10px' }}>{error}</div>}
+
       <form onSubmit={handleSubmit}>
         <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px' }} required />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px' }} required />
@@ -41,7 +44,8 @@ const Login = () => {
           {loading ? 'Loading...' : 'Login'}
         </button>
       </form>
-      <p style={{ marginTop: '10px' }}>Don't have account? <Link to="/register">Register</Link></p>
+
+      {/* ✅ Register link removed */}
     </div>
   );
 };

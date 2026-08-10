@@ -43,13 +43,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.verifyOTP(userId, otp);
       if (response.success) {
-        // ✅ Store user with role
+        // ✅ Store real user data
         const userData = {
           id: response.user.id,
+          fullName: response.user.fullName || response.user.name,
           name: response.user.fullName || response.user.name,
           email: response.user.email,
           phone: response.user.phone,
-          role: response.user.role || 'customer', // ✅ Role saved!
+          role: response.user.role || 'customer',
           walletBalance: response.user.walletBalance || 0,
         };
         localStorage.setItem('authToken', response.token);

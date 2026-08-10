@@ -13,7 +13,15 @@ const Profile = () => {
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
+        console.log('👤 User data from localStorage:', parsed);
         setUser(parsed);
+        
+        // ✅ Update profile with real data
+        setProfile({
+          name: parsed.fullName || parsed.name || 'User',
+          email: parsed.email || 'email@example.com',
+          phone: parsed.phone || '98XXXXXXXX',
+        });
       } catch (e) {
         console.error('Error parsing user data:', e);
       }
@@ -56,23 +64,18 @@ const Profile = () => {
 
   const [documents, setDocuments] = useState({ license: null, citizenship: null });
 
-  // ✅ Logout — Complete Clear
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
-      // ✅ Clear ALL storage
       localStorage.removeItem('authToken');
       localStorage.removeItem('userData');
-      localStorage.clear(); // ✅ Extra security
+      localStorage.clear();
       sessionStorage.clear();
-      
-      // ✅ Clear cookies
       document.cookie.split(";").forEach((c) => {
         document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
       });
-      
       setUser(null);
       navigate('/login');
-      window.location.reload(); // ✅ Force reload
+      window.location.reload();
     }
   };
 
@@ -90,6 +93,15 @@ const Profile = () => {
       alert('Please fill all fields');
       return;
     }
+
+    // ✅ Update localStorage
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    userData.fullName = editData.name;
+    userData.name = editData.name;
+    userData.email = editData.email;
+    userData.phone = editData.phone;
+    localStorage.setItem('userData', JSON.stringify(userData));
+
     setProfile({
       name: editData.name,
       email: editData.email,
@@ -129,12 +141,19 @@ const Profile = () => {
     }
   };
 
+  const roleDisplay = getRoleDisplay();
+  const roleColor = getRoleColor();
+
   return (
     <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>
       <h2>👤 My Profile</h2>
 
+      <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', padding: '4px 8px', background: '#f5f5f5', borderRadius: '4px' }}>
+        Role: {userRole} | Email: {profile.email}
+      </div>
+
       <div style={{ textAlign: 'center', padding: '20px', background: 'white', borderRadius: '8px', border: '1px solid #eee' }}>
-        <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: getRoleColor(), color: 'white', fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+        <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: roleColor, color: 'white', fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
           {profile.name.charAt(0)}
         </div>
 
@@ -160,7 +179,7 @@ const Profile = () => {
         ) : (
           <>
             <h3>{profile.name}</h3>
-            <p style={{ color: getRoleColor(), fontWeight: 'bold', fontSize: '16px' }}>{getRoleDisplay()}</p>
+            <p style={{ color: roleColor, fontWeight: 'bold', fontSize: '16px' }}>{roleDisplay}</p>
             <p style={{ color: '#4CAF50', fontSize: '13px' }}>✅ Verified</p>
           </>
         )}
@@ -170,15 +189,15 @@ const Profile = () => {
         <div style={{ marginTop: '16px', background: 'white', borderRadius: '8px', border: '1px solid #eee', padding: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee' }}>
             <span style={{ color: '#888' }}>📧 Email</span>
-            <span>{profile.email}</span>
+            <span style={{ fontWeight: 'bold', color: '#222' }}>{profile.email}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
             <span style={{ color: '#888' }}>📞 Phone</span>
-            <span>{profile.phone}</span>
+            <span style={{ fontWeight: 'bold', color: '#222' }}>{profile.phone}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
             <span style={{ color: '#888' }}>👑 Role</span>
-            <span style={{ color: getRoleColor(), fontWeight: 'bold' }}>{getRoleDisplay()}</span>
+            <span style={{ color: roleColor, fontWeight: 'bold' }}>{roleDisplay}</span>
           </div>
         </div>
       )}
@@ -225,11 +244,7 @@ const Profile = () => {
         </button>
       )}
 
-      {/* ✅ Logout Button with Complete Clear */}
-      <button 
-        onClick={handleLogout} 
-        style={{ width: '100%', padding: '10px', marginTop: '10px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-      >
+      <button onClick={handleLogout} style={{ width: '100%', padding: '10px', marginTop: '10px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
         🚪 Logout
       </button>
     </div>
