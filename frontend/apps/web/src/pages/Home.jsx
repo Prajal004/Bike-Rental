@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 
 const Home = () => {
   const [bikes, setBikes] = useState([
-    { id: 1, name: 'Honda CB Shine', brand: 'Honda', cc: 125, price: 350, available: true, rating: 4.5, image: '/assets/images/honda-cb-shine.png' },
-    { id: 2, name: 'Yamaha FZ', brand: 'Yamaha', cc: 150, price: 400, available: true, rating: 4.6, image: '/assets/images/yamaha-fz.png' },
-    { id: 3, name: 'TVS Apache', brand: 'TVS', cc: 160, price: 380, available: false, rating: 4.3, image: '/assets/images/tvs-apache.png' },
-    { id: 4, name: 'Royal Enfield Classic', brand: 'Royal Enfield', cc: 350, price: 1200, available: true, rating: 4.8, image: '/assets/images/royal-enfield.png' },
+    { id: 1, name: 'Honda CB Shine', brand: 'Honda', cc: 125, price: 350, available: true, rating: 4.5, location: 'Thamel, Kathmandu', image: '/assets/images/honda-cb-shine.png' },
+    { id: 2, name: 'Yamaha FZ', brand: 'Yamaha', cc: 150, price: 400, available: true, rating: 4.6, location: 'Lakeside, Pokhara', image: '/assets/images/yamaha-fz.png' },
+    { id: 3, name: 'TVS Apache', brand: 'TVS', cc: 160, price: 380, available: false, rating: 4.3, location: 'Patan, Lalitpur', image: '/assets/images/tvs-apache.png' },
+    { id: 4, name: 'Royal Enfield Classic', brand: 'Royal Enfield', cc: 350, price: 1200, available: true, rating: 4.8, location: 'Sauraha, Chitwan', image: '/assets/images/royal-enfield.png' },
   ]);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,7 +18,8 @@ const Home = () => {
     if (searchQuery.trim()) {
       result = result.filter(bike =>
         bike.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bike.brand.toLowerCase().includes(searchQuery.toLowerCase())
+        bike.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        bike.location.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     if (filterBrand !== 'all') {
@@ -33,10 +34,11 @@ const Home = () => {
     <div>
       <h2>🏠 Available Bikes</h2>
 
+      {/* Search Bar */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
         <input
           type="text"
-          placeholder="🔍 Search bikes..."
+          placeholder="🔍 Search bikes by name, brand or location..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{ flex: 1, padding: '12px 16px', border: '2px solid #ddd', borderRadius: '8px', fontSize: '16px', outline: 'none' }}
@@ -44,6 +46,7 @@ const Home = () => {
         <button onClick={() => setSearchQuery('')} style={{ padding: '12px 20px', background: '#E53935', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>✕</button>
       </div>
 
+      {/* Filter Buttons */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
         {brands.map((brand) => (
           <button
@@ -79,6 +82,7 @@ const Home = () => {
                 <div style={{ flex: 1 }}>
                   <h3 style={{ margin: 0 }}>{bike.name}</h3>
                   <p style={{ margin: '4px 0', color: '#888' }}>{bike.brand} · {bike.cc}cc</p>
+                  <p style={{ margin: '2px 0', color: '#666', fontSize: '13px' }}>📍 {bike.location}</p>
                   <p style={{ margin: '4px 0', color: '#4CAF50', fontWeight: 'bold' }}>Rs {bike.price}/day</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>

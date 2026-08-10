@@ -5,12 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
 import TabNavigator from './TabNavigator';
 
-// ✅ Auth Screens
-import LoginScreen from '../screens/Auth/LoginScreen';
-import RegisterScreen from '../screens/Auth/RegisterScreen';
-import OtpScreen from '../screens/Auth/OtpScreen';
-
-// ✅ Main Screens
+// Screens
 import BikeDetailScreen from '../screens/Home/BikeDetailScreen';
 import BookingScreen from '../screens/Booking/BookingScreen';
 import PaymentScreen from '../screens/Payment/PaymentScreen';
@@ -21,6 +16,7 @@ import ShopRegistrationScreen from '../screens/Shop/ShopRegistrationScreen';
 import ShopProfileScreen from '../screens/Shop/ShopProfileScreen';
 import VerifyDocumentsScreen from '../screens/VerifyDocuments/VerifyDocumentsScreen';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
+import SettingsScreen from '../screens/Settings/SettingsScreen';
 
 const Stack = createStackNavigator();
 
@@ -30,11 +26,7 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!isAuthenticated ? (
-        <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-          <Stack.Screen name="OTP" component={OtpScreen} />
-        </>
+        <Stack.Screen name="Auth" component={AuthNavigator} />
       ) : (
         <>
           <Stack.Screen name="Main" component={TabNavigator} />
@@ -48,6 +40,7 @@ export default function AppNavigator() {
           <Stack.Screen name="ShopProfile" component={ShopProfileScreen} options={{ headerShown: true, title: 'My Shop' }} />
           <Stack.Screen name="VerifyDocuments" component={VerifyDocumentsScreen} options={{ headerShown: true, title: 'Verify Documents' }} />
           <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: true, title: 'Notifications' }} />
+          <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, title: 'Settings' }} />
         </>
       )}
     </Stack.Navigator>

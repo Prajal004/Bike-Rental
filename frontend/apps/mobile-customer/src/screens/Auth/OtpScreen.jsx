@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 
-export default function OTPScreen({ route, navigation }) {
+export default function OtpScreen({ route, navigation }) {
   const { userId } = route.params || {};
   const { verifyOTP, resendOTP } = useAuth();
   const [otp, setOtp] = useState('');
@@ -27,7 +27,7 @@ export default function OTPScreen({ route, navigation }) {
     if (result.success) {
       navigation.replace('Main');
     } else {
-      Alert.alert('Verification Failed', result.message);
+      Alert.alert('Verification Failed', result.message || 'Invalid OTP');
     }
   };
 
@@ -68,7 +68,16 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
   subtitle: { fontSize: 16, color: '#666', marginBottom: 30, textAlign: 'center' },
-  otpInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 14, fontSize: 24, letterSpacing: 8, textAlign: 'center', marginBottom: 20 },
+  otpInput: { 
+    borderWidth: 1, 
+    borderColor: '#ddd', 
+    borderRadius: 10, 
+    padding: 14, 
+    fontSize: 24, 
+    letterSpacing: 8, 
+    textAlign: 'center', 
+    marginBottom: 20 
+  },
   button: { backgroundColor: '#4CAF50', padding: 16, borderRadius: 10, alignItems: 'center' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   link: { color: '#4CAF50', textAlign: 'center', marginTop: 16, fontSize: 14 },

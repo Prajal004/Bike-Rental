@@ -3,33 +3,30 @@ import { useNavigate } from 'react-router-dom';
 
 const AdminProfile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false);
 
-  useEffect(() => {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
+  // ✅ Load from localStorage
+  const loadProfile = () => {
+    const saved = localStorage.getItem('adminProfile');
+    if (saved) {
       try {
-        const parsed = JSON.parse(userData);
-        setUser(parsed);
+        return JSON.parse(saved);
       } catch (e) {
-        console.error('Error parsing user data:', e);
+        return null;
       }
     }
-  }, []);
+    return null;
+  };
 
-  const isAdmin = user?.role === 'admin';
-  const adminName = user?.fullName || user?.name || 'Admin';
-  const adminEmail = user?.email || 'admin@bikerental.com';
-  const adminPhone = user?.phone || '98XXXXXXXX';
-
-  const [profile, setProfile] = useState({
-    name: adminName,
-    email: adminEmail,
-    phone: adminPhone,
-    role: 'Super Admin',
-    joined: 'Jan 2026',
+  const [profile, setProfile] = useState(() => {
+    const saved = loadProfile();
+    return saved || {
+      name: 'Prajal Shah',
+      email: 'admin@bikerental.com',
+      phone: '98XXXXXXXX',
+      role: 'Super Admin',
+      avatar: 'P',
+    };
   });
 
   const [editData, setEditData] = useState({
@@ -38,11 +35,39 @@ const AdminProfile = () => {
     phone: profile.phone,
   });
 
-  const [passwordData, setPasswordData] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+  const saveProfile = (data) => {
+    localStorage.setItem('adminProfile', JSON.stringify(data));
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditData({
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+    });
+  };
+
+  const handleSave = () => {
+    if (!editData.name || !editData.email || !editData.phone) {
+      alert('Please fill all fields');
+      return;
+    }
+    const updated = {
+      ...profile,
+      name: editData.name,
+      email: editData.email,
+      phone: editData.phone,
+    };
+    setProfile(updated);
+    saveProfile(updated);
+    setIsEditing(false);
+    alert('✅ Profile updated successfully!');
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
@@ -52,127 +77,126 @@ const AdminProfile = () => {
     }
   };
 
-  const startEditing = () => {
-    setEditData({
-      name: profile.name,
-      email: profile.email,
-      phone: profile.phone,
-    });
-    setIsEditing(true);
-  };
-
-  const saveProfile = () => {
-    if (!editData.name || !editData.email || !editData.phone) {
-      alert('Please fill all fields');
-      return;
-    }
-    setProfile({
-      ...profile,
-      name: editData.name,
-      email: editData.email,
-      phone: editData.phone,
-    });
-    setIsEditing(false);
-    alert('✅ Profile updated successfully!');
-  };
-
-  const cancelEditing = () => {
-    setIsEditing(false);
-  };
-
-  const handleChangePassword = () => {
-    if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      alert('Please fill all password fields');
-      return;
-    }
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
-    if (passwordData.newPassword.length < 6) {
-      alert('Password must be at least 6 characters');
-      return;
-    }
-    alert('✅ Password changed successfully!');
-    setShowChangePassword(false);
-    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
-  };
-
   return (
-    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>
-      <h2>👑 Admin Profile</h2>
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
+      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>👑 Admin Profile</h2>
 
-      <div style={{ textAlign: 'center', padding: '20px', background: 'white', borderRadius: '8px', border: '1px solid #eee' }}>
-        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#9C27B0', color: 'white', fontSize: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-          {profile.name.charAt(0)}
+      {/* Profile Card */}
+      <div style={{
+        background: 'white',
+        borderRadius: '16px',
+        padding: '32px',
+        textAlign: 'center',
+        marginBottom: '20px',
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+      }}>
+        <div style={{
+          width: '80px',
+          height: '80px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #4CAF50, #2E7D32)',
+          color: 'white',
+          fontSize: '36px',
+          fontWeight: 'bold',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 16px',
+        }}>
+          {profile.avatar}
         </div>
 
         {isEditing ? (
           <div style={{ textAlign: 'left' }}>
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: '12px' }}>
               <label style={{ fontWeight: '600', display: 'block', marginBottom: '4px' }}>Full Name</label>
-              <input type="text" value={editData.name} onChange={(e) => setEditData({...editData, name: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
+              <input
+                type="text"
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px' }}
+              />
             </div>
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: '12px' }}>
               <label style={{ fontWeight: '600', display: 'block', marginBottom: '4px' }}>Email</label>
-              <input type="email" value={editData.email} onChange={(e) => setEditData({...editData, email: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
+              <input
+                type="email"
+                value={editData.email}
+                onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px' }}
+              />
             </div>
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: '12px' }}>
               <label style={{ fontWeight: '600', display: 'block', marginBottom: '4px' }}>Phone</label>
-              <input type="tel" value={editData.phone} onChange={(e) => setEditData({...editData, phone: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
+              <input
+                type="tel"
+                value={editData.phone}
+                onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px' }}
+              />
             </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={saveProfile} style={{ flex: 1, padding: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>✅ Save</button>
-              <button onClick={cancelEditing} style={{ flex: 1, padding: '10px', background: '#E53935', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>❌ Cancel</button>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+              <button
+                onClick={handleSave}
+                style={{ flex: 1, padding: '12px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                ✅ Save Changes
+              </button>
+              <button
+                onClick={handleCancel}
+                style={{ flex: 1, padding: '12px', background: '#E53935', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                ❌ Cancel
+              </button>
             </div>
           </div>
         ) : (
           <>
-            <h3>{profile.name}</h3>
-            <p style={{ color: '#9C27B0', fontWeight: 'bold', fontSize: '16px' }}>👑 Super Admin</p>
-            <p style={{ color: '#888', fontSize: '13px' }}>Member since {profile.joined}</p>
+            <h3 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '4px' }}>{profile.name}</h3>
+            <p style={{ color: '#4CAF50', fontWeight: '600', fontSize: '14px' }}>👑 {profile.role}</p>
+
+            <div style={{
+              marginTop: '20px',
+              textAlign: 'left',
+              borderTop: '1px solid #e5e7eb',
+              paddingTop: '16px',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+                <span style={{ color: '#888' }}>📧 Email</span>
+                <span style={{ fontWeight: '500' }}>{profile.email}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+                <span style={{ color: '#888' }}>📞 Phone</span>
+                <span style={{ fontWeight: '500' }}>{profile.phone}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
+                <span style={{ color: '#888' }}>👑 Role</span>
+                <span style={{ color: '#4CAF50', fontWeight: 'bold' }}>{profile.role}</span>
+              </div>
+            </div>
           </>
         )}
       </div>
 
       {!isEditing && (
-        <div style={{ marginTop: '20px', background: 'white', borderRadius: '8px', border: '1px solid #eee', padding: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee' }}>
-            <span style={{ color: '#888' }}>📧 Email</span>
-            <span style={{ fontWeight: '500' }}>{profile.email}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee' }}>
-            <span style={{ color: '#888' }}>📞 Phone</span>
-            <span style={{ fontWeight: '500' }}>{profile.phone}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-            <span style={{ color: '#888' }}>👑 Role</span>
-            <span style={{ color: '#9C27B0', fontWeight: 'bold' }}>Super Admin</span>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button
+            onClick={handleEdit}
+            style={{ padding: '14px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}
+          >
+            ✏️ Edit Profile
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{ padding: '14px', background: '#E53935', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}
+          >
+            🚪 Logout
+          </button>
         </div>
       )}
 
-      {!isEditing && (
-        <button onClick={startEditing} style={{ width: '100%', padding: '10px', marginTop: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          ✏️ Edit Profile
-        </button>
-      )}
-
-      <button onClick={() => setShowChangePassword(!showChangePassword)} style={{ width: '100%', padding: '10px', marginTop: '10px', background: '#2196F3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-        🔑 Change Password
-      </button>
-      {showChangePassword && (
-        <div style={{ marginTop: '10px', padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
-          <input type="password" placeholder="Old Password" value={passwordData.oldPassword} onChange={(e) => setPasswordData({...passwordData, oldPassword: e.target.value})} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
-          <input type="password" placeholder="New Password" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
-          <input type="password" placeholder="Confirm Password" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px' }} />
-          <button onClick={handleChangePassword} style={{ width: '100%', padding: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Update Password</button>
-        </div>
-      )}
-
-      <button onClick={handleLogout} style={{ width: '100%', padding: '10px', marginTop: '10px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-        🚪 Logout
-      </button>
+      <p style={{ textAlign: 'center', color: '#888', fontSize: '12px', marginTop: '20px' }}>© 2026 BikeRental Nepal</p>
     </div>
   );
 };

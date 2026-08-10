@@ -1,11 +1,8 @@
 export const IMAGES = {
-  // Bikes
   honda: require('../../assets/images/honda-cb-shine.png'),
   yamaha: require('../../assets/images/yamaha-fz.png'),
   tvs: require('../../assets/images/tvs-apache.png'),
   royal: require('../../assets/images/royal-enfield.png'),
-  
-  // Common
   logo: require('../../assets/images/logo.png'),
   splash: require('../../assets/images/splash.png'),
   banner: require('../../assets/images/banner.jpg'),

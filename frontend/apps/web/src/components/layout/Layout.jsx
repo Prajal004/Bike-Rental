@@ -4,23 +4,58 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 const Layout = () => {
   const location = useLocation();
 
+  const navItems = [
+    { path: '/', label: '🏠 Home' },
+    { path: '/orders', label: '📋 Orders' },
+    { path: '/admin', label: '👑 Admin' },
+    { path: '/profile', label: '👤 Profile' },
+  ];
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ background: '#4CAF50', padding: '16px', color: 'white' }}>
-        <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '20px' }}>
-          🏍️ Bike Rental
-        </Link>
+    <div className="app-container">
+      {/* ✅ Unique Header */}
+      <header className="app-header">
+        <div className="logo">
+          <span className="logo-icon">🏍️</span>
+          <h1>Bike<span>Rental</span></h1>
+        </div>
+        <div className="tagline">RIDE SMARTER • RIDE SAFER</div>
       </header>
 
-      <main style={{ flex: 1, padding: '16px' }}>
-        <Outlet />
-      </main>
+      <div className="app-layout">
+        <nav className="app-sidebar">
+          <div className="sidebar-title">Menu</div>
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={location.pathname === item.path ? 'active' : ''}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
-      <nav style={{ display: 'flex', justifyContent: 'space-around', padding: '12px', borderTop: '1px solid #ddd', background: 'white' }}>
-        <Link to="/" style={{ color: location.pathname === '/' ? '#4CAF50' : '#666', textDecoration: 'none' }}>🏠 Home</Link>
-        <Link to="/orders" style={{ color: location.pathname === '/orders' ? '#4CAF50' : '#666', textDecoration: 'none' }}>📋 Orders</Link>
-        <Link to="/admin" style={{ color: location.pathname === '/admin' ? '#4CAF50' : '#666', textDecoration: 'none' }}>👑 Admin</Link>
-        <Link to="/profile" style={{ color: location.pathname === '/profile' ? '#4CAF50' : '#666', textDecoration: 'none' }}>👤 Profile</Link>
+        <main className="app-content">
+          <Outlet />
+        </main>
+      </div>
+
+      <nav className="bottom-nav">
+        {navItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            style={{
+              color: location.pathname === item.path ? '#4CAF50' : '#666',
+              textDecoration: 'none',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            {item.label.split(' ')[0]}
+          </Link>
+        ))}
       </nav>
     </div>
   );

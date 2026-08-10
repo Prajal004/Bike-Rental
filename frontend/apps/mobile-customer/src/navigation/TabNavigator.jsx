@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import { Text } from 'react-native';
 
 import HomeScreen from '../screens/Home/HomeScreen';
 import OrderHistoryScreen from '../screens/Order/OrderHistoryScreen';
@@ -14,21 +14,19 @@ export default function TabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarShowLabel: true,
         tabBarActiveTintColor: '#4CAF50',
         tabBarInactiveTintColor: '#999',
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '500' },
         tabBarStyle: { height: 60, paddingBottom: 8, paddingTop: 4 },
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Orders') {
-            iconName = focused ? 'list' : 'list-outline';
-          } else if (route.name === 'SOS') {
-            iconName = focused ? 'alert-circle' : 'alert-circle-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
-          }
-          return <Ionicons name={iconName} size={size || 22} color={color} />;
+        tabBarIcon: ({ focused, color }) => {
+          const icons = {
+            Home: focused ? '🏠' : '🏠',
+            Orders: focused ? '📋' : '📋',
+            SOS: focused ? '🆘' : '🆘',
+            Profile: focused ? '👤' : '👤',
+          };
+          return <Text style={{ fontSize: 20 }}>{icons[route.name]}</Text>;
         },
       })}
     >

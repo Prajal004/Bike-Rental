@@ -60,6 +60,7 @@ const login = async (req, res) => {
   }
 };
 
+// ✅ Verify OTP — Sabai data return garne!
 const verifyOTP = async (req, res) => {
   try {
     const { userId, otp } = req.body;
@@ -77,7 +78,15 @@ const verifyOTP = async (req, res) => {
       success: true,
       message: 'OTP verified',
       token,
-      user: { id: user.id, fullName: user.fullName, email: user.email, phone: user.phone, role: user.role }
+      user: {
+        id: user.id,
+        fullName: user.fullName || user.name,
+        name: user.fullName || user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role, // ✅ Database bata role return!
+        walletBalance: user.walletBalance,
+      }
     });
   } catch (error) {
     console.error('Verify OTP Error:', error);

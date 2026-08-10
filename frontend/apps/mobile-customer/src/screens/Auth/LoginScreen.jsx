@@ -4,12 +4,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ImageBackground,
   StyleSheet,
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { IMAGES } from '../../constants/images';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function LoginScreen({ navigation }) {
@@ -29,37 +27,58 @@ export default function LoginScreen({ navigation }) {
     if (result.success) {
       navigation.navigate('OTP', { userId: result.userId });
     } else {
-      Alert.alert('Login Failed', result.message);
+      Alert.alert('Login Failed', result.message || 'Invalid credentials');
     }
   };
 
+  const handleForgotPassword = () => {
+    navigation.navigate('ForgotPassword');
+  };
+
   return (
-    <ImageBackground source={IMAGES.loginBg} style={styles.container} resizeMode="cover">
-      <View style={styles.overlay}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Login to continue</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.subtitle}>Login to continue</Text>
 
-        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-        <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
-        </TouchableOpacity>
+      {/* ✅ Forgot Password Link */}
+      <TouchableOpacity style={styles.forgotLink} onPress={handleForgotPassword}>
+        <Text style={styles.forgotText}>Forgot Password?</Text>
+      </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-          <Text style={styles.link}>Don't have account? Register</Text>
-        </TouchableOpacity>
-      </View>
-    </ImageBackground>
+      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.link}>Don't have account? Register</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  overlay: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: 'rgba(0,0,0,0.3)' },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#fff', textAlign: 'center' },
-  subtitle: { fontSize: 16, color: '#ddd', textAlign: 'center', marginBottom: 30 },
-  input: { backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 10, padding: 14, marginBottom: 14, fontSize: 16 },
+  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
+  subtitle: { fontSize: 16, color: '#666', marginBottom: 30, textAlign: 'center' },
+  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 14, marginBottom: 14, fontSize: 16 },
+  forgotLink: { alignSelf: 'flex-end', marginBottom: 16 },
+  forgotText: { color: '#4CAF50', fontSize: 14 },
   button: { backgroundColor: '#4CAF50', padding: 16, borderRadius: 10, alignItems: 'center' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   link: { color: '#4CAF50', textAlign: 'center', marginTop: 16, fontSize: 14 },
