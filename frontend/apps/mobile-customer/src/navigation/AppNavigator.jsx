@@ -5,7 +5,12 @@ import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
 import TabNavigator from './TabNavigator';
 
-// Screens
+// ✅ Auth Screens
+import LoginScreen from '../screens/Auth/LoginScreen';
+import RegisterScreen from '../screens/Auth/RegisterScreen';
+import OtpScreen from '../screens/Auth/OtpScreen';
+
+// ✅ Main Screens
 import BikeDetailScreen from '../screens/Home/BikeDetailScreen';
 import BookingScreen from '../screens/Booking/BookingScreen';
 import PaymentScreen from '../screens/Payment/PaymentScreen';
@@ -25,7 +30,11 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!isAuthenticated ? (
-        <Stack.Screen name="Auth" component={AuthNavigator} />
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="OTP" component={OtpScreen} />
+        </>
       ) : (
         <>
           <Stack.Screen name="Main" component={TabNavigator} />
