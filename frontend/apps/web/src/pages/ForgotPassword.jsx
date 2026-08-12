@@ -7,7 +7,7 @@ const ForgotPassword = () => {
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [step, setStep] = useState(1); // 1: Email, 2: OTP+Password
+  const [step, setStep] = useState(1);
   const [userId, setUserId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +27,7 @@ const ForgotPassword = () => {
       if (response.success) {
         setUserId(response.userId);
         setStep(2);
-        setSuccess('OTP sent to your registered phone!');
+        setSuccess('OTP sent to your phone!');
       } else {
         setError(response.message || 'User not found');
       }
@@ -55,13 +55,9 @@ const ForgotPassword = () => {
     setError('');
     setLoading(true);
     try {
-      const response = await authAPI.resetPassword({
-        userId,
-        otp,
-        newPassword
-      });
+      const response = await authAPI.resetPassword({ userId, otp, newPassword });
       if (response.success) {
-        setSuccess('Password reset successfully! Login with new password.');
+        setSuccess('Password reset successfully!');
         setTimeout(() => navigate('/login'), 2000);
       } else {
         setError(response.message || 'Reset failed');
@@ -76,7 +72,6 @@ const ForgotPassword = () => {
   return (
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
       <h2>🔑 Forgot Password</h2>
-      
       {error && <div style={{ padding: '10px', background: '#fee2e2', color: '#dc2626', borderRadius: '4px', marginBottom: '10px' }}>{error}</div>}
       {success && <div style={{ padding: '10px', background: '#dcfce7', color: '#166534', borderRadius: '4px', marginBottom: '10px' }}>{success}</div>}
 
