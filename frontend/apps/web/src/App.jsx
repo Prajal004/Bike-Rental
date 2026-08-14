@@ -10,7 +10,7 @@ import BikeDetail from './pages/BikeDetail';
 import Booking from './pages/Booking';
 import Payment from './pages/Payment';
 import OrderHistory from './pages/OrderHistory';
-import Profile from './pages/Profile';  // ✅ Import Profile
+import Profile from './pages/Profile';
 import SOS from './pages/SOS';
 import Referral from './pages/Referral';
 import ShopRegistration from './pages/ShopRegistration';
@@ -19,6 +19,8 @@ import AddBike from './pages/AddBike';
 import Notifications from './pages/Notifications';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import ChatScreen from './screens/Chat/ChatScreen';        // ✅
+import ChatList from './screens/Chat/ChatList';            // ✅
 
 function App() {
   return (
@@ -40,7 +42,7 @@ function App() {
           <Route path="booking" element={<Booking />} />
           <Route path="payment" element={<Payment />} />
           <Route path="orders" element={<OrderHistory />} />
-          <Route path="profile" element={<Profile />} />  {/* ✅ Profile Route */}
+          <Route path="profile" element={<Profile />} />
           <Route path="sos" element={<SOS />} />
           <Route path="referral" element={<Referral />} />
           <Route path="shop-register" element={<ShopRegistration />} />
@@ -49,6 +51,8 @@ function App() {
           <Route path="notifications" element={<Notifications />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="admin" element={<AdminDashboard />} />
+          <Route path="chat" element={<ChatList />} />                    {/* ✅ */}
+          <Route path="chat/:chatId/:userId" element={<ChatScreen />} /> {/* ✅ */}
         </Route>
 
         <Route path="*" element={<Navigate to="/" />} />

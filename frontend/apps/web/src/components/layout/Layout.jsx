@@ -8,6 +8,7 @@ const Layout = () => {
     { path: '/', label: '🏠 Home' },
     { path: '/orders', label: '📋 Orders' },
     { path: '/admin', label: '👑 Admin' },
+    { path: '/chat', label: '💬 Chat' },  // ✅ Chat added
     { path: '/profile', label: '👤 Profile' },
   ];
 
