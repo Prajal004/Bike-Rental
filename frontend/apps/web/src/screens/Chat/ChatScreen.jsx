@@ -12,42 +12,35 @@ const ChatScreen = () => {
   const [socket, setSocket] = useState(null);
   const messagesEndRef = useRef(null);
 
-  const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+  const SOCKET_URL = 'http://localhost:5000';
 
-  // ✅ Connect WebSocket
   useEffect(() => {
     const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
-
     if (chatId) {
       newSocket.emit('join-chat', chatId);
     }
-
     return () => newSocket.close();
   }, [chatId]);
 
-  // ✅ Load messages
   useEffect(() => {
     if (chatId) {
       fetchMessages();
     }
   }, [chatId]);
 
-  // ✅ Socket listeners
   useEffect(() => {
     if (!socket) return;
-
     socket.on('new-message', (data) => {
-      setMessages((prev) => [...prev, data.message]);
+      setMessages((prev) => {
+        // ✅ Check if message already exists to avoid duplicates
+        const exists = prev.some(msg => msg.id === data.message.id);
+        if (exists) return prev;
+        return [...prev, data.message];
+      });
     });
-
-    socket.on('user-typing', (data) => {
-      // Show typing indicator
-    });
-
     return () => {
       socket.off('new-message');
-      socket.off('user-typing');
     };
   }, [socket]);
 
@@ -67,19 +60,15 @@ const ChatScreen = () => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
-
     try {
       const response = await chatAPI.send({
         chatId,
         receiverId: userId,
         message: newMessage,
       });
-
       if (response.success) {
         setMessages((prev) => [...prev, response.message]);
         setNewMessage('');
-
-        // Emit via socket
         if (socket) {
           socket.emit('send-message', {
             chatId,
@@ -92,12 +81,6 @@ const ChatScreen = () => {
     }
   };
 
-  const handleTyping = () => {
-    if (socket) {
-      socket.emit('typing', { chatId });
-    }
-  };
-
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '40px' }}>Loading messages...</div>;
   }
@@ -105,14 +88,11 @@ const ChatScreen = () => {
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', height: '80vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}>
-          ←
-        </button>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}>←</button>
         <h3 style={{ margin: 0 }}>💬 Chat</h3>
         <div style={{ width: '40px' }} />
       </div>
 
-      {/* Messages */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
@@ -125,43 +105,45 @@ const ChatScreen = () => {
         {messages.length === 0 ? (
           <p style={{ textAlign: 'center', color: '#888', padding: '40px' }}>No messages yet. Start chatting!</p>
         ) : (
-          messages.map((msg) => (
-            <div
-              key={msg.id}
-              style={{
-                display: 'flex',
-                justifyContent: msg.senderId === userId ? 'flex-end' : 'flex-start',
-                marginBottom: '8px',
-              }}
-            >
+          messages.map((msg, index) => {
+            // ✅ Create unique key: id + index fallback
+            const uniqueKey = msg.id ? `${msg.id}-${index}` : `msg-${index}-${Date.now()}`;
+            return (
               <div
+                key={uniqueKey}
                 style={{
-                  maxWidth: '70%',
-                  padding: '10px 14px',
-                  borderRadius: '12px',
-                  background: msg.senderId === userId ? '#4CAF50' : 'white',
-                  color: msg.senderId === userId ? 'white' : '#333',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                  display: 'flex',
+                  justifyContent: msg.senderId === userId ? 'flex-end' : 'flex-start',
+                  marginBottom: '8px',
                 }}
               >
-                <p style={{ margin: 0 }}>{msg.message}</p>
-                <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.7 }}>
-                  {new Date(msg.createdAt).toLocaleTimeString()}
-                </p>
+                <div
+                  style={{
+                    maxWidth: '70%',
+                    padding: '10px 14px',
+                    borderRadius: '12px',
+                    background: msg.senderId === userId ? '#4CAF50' : 'white',
+                    color: msg.senderId === userId ? 'white' : '#333',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                  }}
+                >
+                  <p style={{ margin: 0 }}>{msg.message}</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '10px', opacity: 0.7 }}>
+                    {msg.created_at ? new Date(msg.created_at).toLocaleTimeString() : ''}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <form onSubmit={handleSend} style={{ display: 'flex', gap: '8px' }}>
         <input
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          onKeyUp={handleTyping}
           placeholder="Type a message..."
           style={{
             flex: 1,

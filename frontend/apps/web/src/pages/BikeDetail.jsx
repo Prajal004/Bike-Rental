@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ChatButton from '../components/ChatButton';  // ✅ Import ChatButton
+import ChatButton from '../components/ChatButton';
 
 const BikeDetail = () => {
   const { id } = useParams();
@@ -8,7 +8,7 @@ const BikeDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [days, setDays] = useState(1);
 
-  // ✅ Mock bike data with shop owner
+  // ✅ Sahi UUID format ma shop owner ID
   const bike = {
     id: id,
     name: 'Honda CB Shine',
@@ -19,8 +19,8 @@ const BikeDetail = () => {
     description: 'Best commuter bike in Nepal.',
     available: true,
     rating: 4.5,
-    shopOwnerId: 'shop-owner-id-123',  // ✅ Shop owner ID
-    shopName: 'Prajal Bike Shop',       // ✅ Shop name
+    shopOwnerId: 'f0ffc8b6-8334-410d-b645-3c707972563f', // ✅ UUID format
+    shopName: 'Prajal Bike Shop',
     images: ['🏍️', '🚴', '⚙️', '🔧'],
     reviews: [
       { user: 'Ram K.', rating: 5, comment: 'Amazing bike!', date: '2026-07-28' },
@@ -73,7 +73,7 @@ const BikeDetail = () => {
         Rs {bike.pricePerDay} <span style={{ fontSize: '14px', color: '#888', fontWeight: 'normal' }}>/ day</span>
       </p>
 
-      {/* ✅ Chat Button */}
+      {/* ✅ Chat Button with real UUID */}
       <div style={{ marginTop: '12px' }}>
         <ChatButton 
           shopOwnerId={bike.shopOwnerId} 
