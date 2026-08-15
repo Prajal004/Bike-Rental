@@ -42,6 +42,8 @@ const Chat = sequelize.define('Chat', {
 }, {
   tableName: 'chats',
   timestamps: true,
+  createdAt: 'created_at',  // ✅ Map to snake_case
+  updatedAt: 'updated_at',
 });
 
 module.exports = Chat;
