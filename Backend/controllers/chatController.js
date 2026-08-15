@@ -3,25 +3,11 @@ const ChatMessage = require('../models/ChatMessage');
 const User = require('../models/User');
 const { Op } = require('sequelize');
 
-// ✅ Validate UUID helper
-const isValidUUID = (uuid) => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-};
-
 // Get or create chat
 const getOrCreateChat = async (req, res) => {
   try {
     const { participant2 } = req.body;
     const participant1 = req.user.id;
-
-    // ✅ Validate UUID
-    if (!isValidUUID(participant2)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid user ID format',
-      });
-    }
 
     let chat = await Chat.findOne({
       where: {
@@ -93,7 +79,7 @@ const getChatMessages = async (req, res) => {
 
     const messages = await ChatMessage.findAll({
       where: { chatId },
-      order: [['createdAt', 'ASC']],
+      order: [['created_at', 'ASC']],  // ✅ Fixed
     });
 
     // Mark messages as read
@@ -108,7 +94,6 @@ const getChatMessages = async (req, res) => {
       }
     );
 
-    // Update unread count
     await Chat.update(
       { unreadCount1: 0, unreadCount2: 0 },
       { where: { id: chatId } }
@@ -122,7 +107,7 @@ const getChatMessages = async (req, res) => {
     console.error('Get Chat Messages Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
     });
   }
 };
@@ -150,13 +135,11 @@ const sendMessage = async (req, res) => {
       fileUrl,
     });
 
-    // Update chat last message
     await chat.update({
       lastMessage: message,
       lastMessageAt: new Date(),
     });
 
-    // Update unread count
     const unreadField = chat.participant1 === receiverId ? 'unreadCount1' : 'unreadCount2';
     await chat.increment(unreadField);
 
