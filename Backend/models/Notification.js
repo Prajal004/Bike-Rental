@@ -1,66 +1,45 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const NotificationSchema = new mongoose.Schema({
+const Notification = sequelize.define('Notification', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'user_id',
   },
   title: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   message: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.TEXT,
+    allowNull: false,
   },
   type: {
-    type: String,
-    enum: ['booking', 'payment', 'reminder', 'promotion', 'system', 'alert'],
-    required: true
-  },
-  priority: {
-    type: String,
-    enum: ['low', 'medium', 'high', 'urgent'],
-    default: 'medium'
-  },
-  data: {
-    type: mongoose.Schema.Types.Mixed
-  },
-  action: {
-    type: String,
-    enum: ['view_booking', 'view_payment', 'view_bike', 'view_profile', 'none'],
-    default: 'none'
-  },
-  actionId: {
-    type: String
+    type: DataTypes.ENUM('booking', 'payment', 'sos', 'system', 'chat'),
+    defaultValue: 'system',
   },
   isRead: {
-    type: Boolean,
-    default: false
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'is_read',
   },
   readAt: {
-    type: Date
+    type: DataTypes.DATE,
+    field: 'read_at',
   },
-  isDelivered: {
-    type: Boolean,
-    default: false
+  data: {
+    type: DataTypes.JSONB,
+    defaultValue: {},
   },
-  deliveredAt: {
-    type: Date
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  expiresAt: {
-    type: Date
-  }
+}, {
+  tableName: 'notifications',
+  timestamps: true,
 });
 
-// Index for faster queries
-NotificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
-
-module.exports = mongoose.model('Notification', NotificationSchema);
+module.exports = Notification;

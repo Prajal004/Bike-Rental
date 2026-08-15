@@ -39,16 +39,6 @@ const Chat = sequelize.define('Chat', {
     type: DataTypes.ENUM('active', 'archived'),
     defaultValue: 'active',
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    field: 'created_at',
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    field: 'updated_at',
-  },
 }, {
   tableName: 'chats',
   timestamps: true,

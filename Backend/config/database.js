@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
+require('dotenv').config();  // ✅ DOTENV LOAD GARNE!
 
-// ✅ Debug
 console.log('🔍 database.js - DATABASE_URL:', process.env.DATABASE_URL ? '✅ Set' : '❌ Missing');
 
 const databaseUrl = process.env.DATABASE_URL;

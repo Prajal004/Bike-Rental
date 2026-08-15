@@ -3,11 +3,25 @@ const ChatMessage = require('../models/ChatMessage');
 const User = require('../models/User');
 const { Op } = require('sequelize');
 
+// ✅ Validate UUID helper
+const isValidUUID = (uuid) => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+};
+
 // Get or create chat
 const getOrCreateChat = async (req, res) => {
   try {
     const { participant2 } = req.body;
     const participant1 = req.user.id;
+
+    // ✅ Validate UUID
+    if (!isValidUUID(participant2)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format',
+      });
+    }
 
     let chat = await Chat.findOne({
       where: {
@@ -52,8 +66,8 @@ const getUserChats = async (req, res) => {
         status: 'active',
       },
       include: [
-        { model: User, as: 'user1', attributes: ['id', 'fullName', 'profileImage'] },
-        { model: User, as: 'user2', attributes: ['id', 'fullName', 'profileImage'] },
+        { model: User, as: 'user1', attributes: ['id', 'fullName'] },
+        { model: User, as: 'user2', attributes: ['id', 'fullName'] },
       ],
       order: [['lastMessageAt', 'DESC']],
     });

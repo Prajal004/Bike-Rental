@@ -43,11 +43,6 @@ const ChatMessage = sequelize.define('ChatMessage', {
     type: DataTypes.DATE,
     field: 'read_at',
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    field: 'created_at',
-  },
 }, {
   tableName: 'chat_messages',
   timestamps: true,

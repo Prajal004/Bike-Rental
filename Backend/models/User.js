@@ -64,7 +64,7 @@ const User = sequelize.define('User', {
   },
 }, {
   tableName: 'users',
-  timestamps: true,  // ✅ Sequelize auto handles createdAt/updatedAt
+  timestamps: true,
   hooks: {
     beforeCreate: async (user) => {
       if (user.password) {
@@ -84,5 +84,7 @@ const User = sequelize.define('User', {
 User.prototype.comparePassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// ✅ No Chat associations here — sabai models/index.js ma!
 
 module.exports = User;

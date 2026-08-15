@@ -5,7 +5,13 @@ const { connectDB } = require('./config/database');
 const http = require('http');
 const { Server } = require('socket.io');
 
+// ✅ Models load garne — associations set huncha!
+require('./models/index');
+
 dotenv.config();
+
+console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? '✅ Found' : '❌ Missing');
+
 connectDB();
 
 const app = express();
@@ -22,9 +28,10 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/location', require('./routes/locationRoutes'));
 app.use('/api/motorcycles', require('./routes/motorcycleRoutes'));
+app.use('/api/wishlist', require('./routes/wishlistRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/referrals', require('./routes/referralRoutes'));
 app.use('/api/rentals', require('./routes/rentalRoutes'));

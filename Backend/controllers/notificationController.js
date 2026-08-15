@@ -1,51 +1,30 @@
-const { Notification } = require('../models/Notification');
-const { User } = require('../models/User');
+const Notification = require('../models/Notification');
 
-// Get user notifications
-exports.getNotifications = async (req, res) => {
+// Get all notifications
+const getNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { limit = 20, offset = 0, isRead } = req.query;
 
-    const where = { userId };
-    if (isRead !== undefined) {
-      where.isRead = isRead === 'true';
-    }
-
-    const notifications = await Notification.findAndCountAll({
-      where,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [['createdAt', 'DESC']]
+    const notifications = await Notification.findAll({
+      where: { userId },
+      order: [['createdAt', 'DESC']],
     });
 
-    res.json({
+    res.status(200).json({
       success: true,
-      data: notifications.rows,
-      total: notifications.count,
-      hasMore: notifications.count > parseInt(offset) + parseInt(limit)
+      notifications,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// Get unread count
-exports.getUnreadCount = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const count = await Notification.count({
-      where: { userId, isRead: false }
+    console.error('Get Notifications Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
     });
-
-    res.json({ success: true, data: { unreadCount: count } });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 // Mark as read
-exports.markAsRead = async (req, res) => {
+const markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
@@ -55,21 +34,32 @@ exports.markAsRead = async (req, res) => {
     });
 
     if (!notification) {
-      return res.status(404).json({ success: false, message: 'Notification not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Not found',
+      });
     }
 
-    notification.isRead = true;
-    notification.readAt = new Date();
-    await notification.save();
+    await notification.update({
+      isRead: true,
+      readAt: new Date(),
+    });
 
-    res.json({ success: true, message: 'Marked as read' });
+    res.status(200).json({
+      success: true,
+      message: 'Marked as read',
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Mark as Read Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
   }
 };
 
 // Mark all as read
-exports.markAllAsRead = async (req, res) => {
+const markAllAsRead = async (req, res) => {
   try {
     const userId = req.user.id;
 
@@ -78,25 +68,61 @@ exports.markAllAsRead = async (req, res) => {
       { where: { userId, isRead: false } }
     );
 
-    res.json({ success: true, message: 'All notifications marked as read' });
+    res.status(200).json({
+      success: true,
+      message: 'All marked as read',
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Mark All as Read Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
   }
 };
 
-// Create notification (internal use)
-exports.createNotification = async (userId, title, message, type, data = null) => {
+// Get unread count
+const getUnreadCount = async (req, res) => {
   try {
-    const notification = await Notification.create({
+    const userId = req.user.id;
+
+    const count = await Notification.count({
+      where: { userId, isRead: false }
+    });
+
+    res.status(200).json({
+      success: true,
+      unreadCount: count,
+    });
+  } catch (error) {
+    console.error('Get Unread Count Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+};
+
+// Create notification (internal)
+const createNotification = async (userId, title, message, type = 'system', data = {}) => {
+  try {
+    return await Notification.create({
       userId,
       title,
       message,
       type,
-      data
+      data,
     });
-    return notification;
   } catch (error) {
-    console.error('Error creating notification:', error);
+    console.error('Create Notification Error:', error);
     return null;
   }
+};
+
+module.exports = {
+  getNotifications,
+  markAsRead,
+  markAllAsRead,
+  getUnreadCount,
+  createNotification,
 };
