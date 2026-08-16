@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// ✅ Use local backend for faster response
-const API_URL = 'http://localhost:5000/api';
+// ✅ Production URL — Render backend
+const API_URL = 'https://bike-rental-okup.onrender.com/api';
 
 export const api = axios.create({
   baseURL: API_URL,
