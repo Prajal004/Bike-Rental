@@ -19,8 +19,8 @@ import AddBike from './pages/AddBike';
 import Notifications from './pages/Notifications';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import ChatScreen from './screens/Chat/ChatScreen';        // ✅
-import ChatList from './screens/Chat/ChatList';            // ✅
+import ChatScreen from './screens/Chat/ChatScreen';
+import ChatList from './screens/Chat/ChatList';
 
 function App() {
   return (
@@ -31,11 +31,13 @@ function App() {
       }}
     >
       <Routes>
+        {/* ✅ Auth routes - NO Layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/otp" element={<OTP />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
+        {/* ✅ Protected routes - WITH Layout */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="bike/:id" element={<BikeDetail />} />
@@ -51,8 +53,8 @@ function App() {
           <Route path="notifications" element={<Notifications />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="admin" element={<AdminDashboard />} />
-          <Route path="chat" element={<ChatList />} />                    {/* ✅ */}
-          <Route path="chat/:chatId/:userId" element={<ChatScreen />} /> {/* ✅ */}
+          <Route path="chat" element={<ChatList />} />
+          <Route path="chat/:chatId/:userId" element={<ChatScreen />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" />} />
