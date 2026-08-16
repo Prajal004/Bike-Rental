@@ -1,0 +1,8 @@
+[build]
+  base = "frontend/apps/web"
+  publish = "frontend/apps/web/dist"
+  command = "npm run build"
+
+[build.environment]
+  VITE_API_URL = "https://bike-rental-okup.onrender.com/api"
+  VITE_SOCKET_URL = "https://bike-rental-okup.onrender.com"
