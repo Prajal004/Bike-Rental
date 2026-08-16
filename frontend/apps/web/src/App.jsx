@@ -31,13 +31,13 @@ function App() {
       }}
     >
       <Routes>
-        {/* ✅ Auth routes - NO Layout */}
+        {/* ✅ Auth routes - Layout BINA */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/otp" element={<OTP />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* ✅ Protected routes - WITH Layout */}
+        {/* ✅ Protected routes - Layout SANGA */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="bike/:id" element={<BikeDetail />} />
